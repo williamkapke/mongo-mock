@@ -1,7 +1,7 @@
 {
   "author": "William Kapke",
   "name": "mongo-mock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Let's pretend we have a real MongoDB",
   "main": "mongo-mock.js",
   "scripts": {

@@ -199,9 +199,10 @@ function find_options(args) {
     //selector, fields, callback?
     //selector, options, callback?
     case "object,object":
+    case "object,undefined,function":
     case "object,object,function":
       //sniff for a 1 or -1 to detect fields object
-      if(Math.abs(args[1][0])===1) {
+      if(!args[1] || Math.abs(args[1][0])===1) {
         options.fields = args[1];
       }
       else {
