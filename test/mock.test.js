@@ -36,8 +36,8 @@ describe('mock tests', function () {
         done();
       });
     });
-    it('should create data', function (done) {
-      collection.insert({_id:id, test:456}, function (err, result) {
+    it('should allow _id to be defined', function (done) {
+      collection.insert({_id:id, test:456, foo:true}, function (err, result) {
         (!!err).should.be.false;
         (!!result.ops).should.be.true;
         (!!result.ops[0]).should.be.true;
@@ -55,6 +55,14 @@ describe('mock tests', function () {
         doc.should.have.property('_id');
         doc._id.toString().should.have.length(24);//auto generated _id
         doc.should.have.property('test', 123);
+        done();
+      });
+    });
+    it('should return only the fields specified', function (done) {
+      collection.findOne({test:456}, {foo:1}, function (err, doc) {
+        (!!err).should.be.false;
+        (!!doc).should.be.true;
+        doc.should.eql({foo:true});
         done();
       });
     });
