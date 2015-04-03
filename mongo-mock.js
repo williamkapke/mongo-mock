@@ -104,12 +104,13 @@ function collection(connection, name, persisted) {
 
       asyncish(function() {
         var first = _.find(collection, opts.query);
-        var props = Object.keys(opts.fields);
-        var type = opts.fields[props[0]];
-        type = type===1? "pick" : type===-1? "omit" : undefined;
-        if(first && type)
-          first = _[type](first, props);//only supports simple projections. PR welcome! :)
-
+        if(first && opts.fields){
+          var props = Object.keys(opts.fields);
+          var type = opts.fields[props[0]];
+          type = type===1? "pick" : type===-1? "omit" : undefined;
+          if(type)
+            first = _[type](first, props);//only supports simple projections. PR welcome! :)
+        }
         opts.callback(null, first);
       })
     },

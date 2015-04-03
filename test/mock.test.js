@@ -66,6 +66,17 @@ describe('mock tests', function () {
         done();
       });
     });
+    it('should accept undefined fields', function (done) {
+      collection.findOne({test:456}, undefined, function (err, doc) {
+        (!!err).should.be.false;
+        (!!doc).should.be.true;
+        doc.should.have.property('_id');
+        doc._id.toString().should.have.length(24);//auto generated _id
+        doc.should.have.property('test', 456);
+        doc.should.have.property('foo', true);
+        done();
+      });
+    });
     it('should findOne by an ObjectId', function (done) {
       collection.findOne({_id:id}, function (err, doc) {
         (!!err).should.be.false;
