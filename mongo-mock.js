@@ -18,7 +18,9 @@ module.exports = {
     connect: function (connString, options, callback) {
       callback = arguments[arguments.length - 1];
       if(!options || callback===options) options = {};
-      debug('connecting ' + connString);
+      var cached = dbs[connString];
+      debug('connecting %s %s', connString, cached?'(cached)':'');
+      if(cached) return callback(null, cached);
 
       asyncish(function () {
         //keep the process running like a live connection would
@@ -28,10 +30,15 @@ module.exports = {
           get open() { return open; },
           collection: function (name) {
             if (!open) throw new Error("Connection closed");
-            return collections[name] || (collections[name] = collection(connected_db, name));
+            var c = collections[name];
+            if(!c){
+              debug('creating collection %s', name);
+              c = collections[name] = collection(connected_db, name);
+            }
+            return c;
           },
           close: function () {
-            debug('closing ' + connString);
+            debug('closing %s', connString);
             clearInterval(open);
             open = false;
           },
@@ -59,6 +66,7 @@ function collection(connection, name, persisted) {
   var mock = {
     insert: function(data, options, callback) {
       if(!connection.open) return callback(new Error("Connection closed"));
+      debug('insert %j', data);
       callback = arguments[arguments.length-1];
       //if(callback===options) options = {};//ignored when mocking
       if(!Array.isArray(data))
@@ -68,7 +76,6 @@ function collection(connection, name, persisted) {
         data.forEach(function(doc) {
           var id = doc._id;
           if(!id) id = doc._id = ObjectId();
-          if(debug.enabled) debug("insert: _id="+id);
 
           if(pk_index[id]) callback(new Error("Duplicate document"));
           pk_index[id] = doc;
@@ -81,7 +88,7 @@ function collection(connection, name, persisted) {
     find: function(query, fields, callback) {
       var opts = find_options(arguments);
       if(!connection.open) return opts.callback(new Error("Connection closed"));
-      if(debug.enabled) debug("find: " + inspect(opts.query));
+      debug('find %j', query);
 
       asyncish(function() {
         var docs = _.where(collection, opts.query);
@@ -100,7 +107,7 @@ function collection(connection, name, persisted) {
     findOne: function(query, fields, callback) {
       var opts = find_options(arguments);
       if(!connection.open) return opts.callback(new Error("Connection closed"));
-      if(debug.enabled) debug("findOne: " + inspect(opts.query));
+      debug('findOne %j', query);
 
       asyncish(function() {
         var first = _.find(collection, opts.query);
@@ -121,7 +128,7 @@ function collection(connection, name, persisted) {
       else if(callback===options) options = {};
       if(!connection.open) return callback && callback(new Error("Connection closed"));
 
-      if(debug.enabled) debug((options.upsert?"upsert: ":"update: ") + inspect(query));
+      debug('%s %j', (options.upsert?"upsert: ":"update: "), query);
 
       connection.persist(function() {
         var docs = (options.multi? _.where : _.find)(collection, query) || [];
@@ -145,7 +152,7 @@ function collection(connection, name, persisted) {
 
     remove: function(query, callback) {
       if(!connection.open) return callback && callback(new Error("Connection closed"));
-      if(debug.enabled) debug("remove: " + inspect(query));
+      debug('remove %j', query);
 
       connection.persist(function() {
         var docs = _.remove(collection, query);
