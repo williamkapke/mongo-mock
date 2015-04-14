@@ -3,19 +3,44 @@ var ObjectId = require('bson-objectid');
 var id = ObjectId();
 var mongo = require('../');
 var MongoClient = mongo.MongoClient;
-
+MongoClient.persist = "mongo.json";
 
 describe('mock tests', function () {
   var connected_db;
   var collection;
 
   before(function (done) {
-    MongoClient.connect("mock_database", {persist:"mongo.json"}, function(err, db) {
+    MongoClient.connect("mongodb://someserver/mock_database", function(err, db) {
       connected_db = db;
       collection = connected_db.collection("users");
       done();
     });
   });
+
+  describe('indexes', function () {
+    it('should create a unique index', function (done) {
+      collection.createIndex({test:1}, {unique:true}, function (err, name) {
+        if(err) return done(err);
+        name.should.equal('test_1');
+
+        collection.insert([{test:555, baz:1},{test:555,baz:2}], function (err, result) {
+          (!!err).should.be.true;
+          (!!result).should.be.false;
+          err.message.should.equal('E11000 duplicate key error index: mock_database.users.$test_1');
+
+          //the first one should succeed
+          collection.findOne({test:555}, function (err, doc) {
+            if(err) return done(err);
+            (!!doc).should.be.true;
+            doc.should.have.property('baz', 1);
+            done();
+          });
+        });
+      });
+    });
+
+  });
+
 
   describe('collections', function () {
     'insert,findOne,update,remove'.split(',').forEach(function(key) {
@@ -25,9 +50,9 @@ describe('mock tests', function () {
       });
     });
 
-    it('should create data', function (done) {
+    it('should insert data', function (done) {
       collection.insert({test:123}, function (err, result) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!result.ops).should.be.true;
         (!!result.ops[0]).should.be.true;
         (!!result.ops[0]._id).should.be.true;
@@ -38,7 +63,7 @@ describe('mock tests', function () {
     });
     it('should allow _id to be defined', function (done) {
       collection.insert({_id:id, test:456, foo:true}, function (err, result) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!result.ops).should.be.true;
         (!!result.ops[0]).should.be.true;
         (!!result.ops[0]._id).should.be.true;
@@ -50,7 +75,7 @@ describe('mock tests', function () {
 
     it('should findOne by a property', function (done) {
       collection.findOne({test:123}, function (err, doc) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!doc).should.be.true;
         doc.should.have.property('_id');
         doc._id.toString().should.have.length(24);//auto generated _id
@@ -60,7 +85,7 @@ describe('mock tests', function () {
     });
     it('should return only the fields specified', function (done) {
       collection.findOne({test:456}, {foo:1}, function (err, doc) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!doc).should.be.true;
         doc.should.eql({foo:true});
         done();
@@ -68,7 +93,7 @@ describe('mock tests', function () {
     });
     it('should accept undefined fields', function (done) {
       collection.findOne({test:456}, undefined, function (err, doc) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!doc).should.be.true;
         doc.should.have.property('_id');
         doc._id.toString().should.have.length(24);//auto generated _id
@@ -79,7 +104,7 @@ describe('mock tests', function () {
     });
     it('should findOne by an ObjectId', function (done) {
       collection.findOne({_id:id}, function (err, doc) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!doc).should.be.true;
         doc.should.have.property('_id', id);
         doc.should.have.property('test', 456);
@@ -88,7 +113,7 @@ describe('mock tests', function () {
     });
     it('should NOT findOne if it does not exist', function (done) {
       collection.findOne({_id:"asdfasdf"}, function (err, doc) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         (!!doc).should.be.false;
         done();
       });
@@ -97,11 +122,11 @@ describe('mock tests', function () {
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, count) {
-        (!!err).should.be.false;
+        if(err) return done(err);
         count.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
-          (!!err).should.be.false;
+          if(err) return done(err);
           (!!doc).should.be.true;
           doc.should.have.property("foo", "bar");
           done();
@@ -110,29 +135,29 @@ describe('mock tests', function () {
     });
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, count) {
-        (!!err).should.be.false;
-        count.should.equal(2);
+        if(err) return done(err);
+        count.should.equal(3);
 
         collection.find({foo:"bar"}, function (err, results) {
-          (!!err).should.be.false;
+          if(err) return done(err);
           (!!results).should.be.true;
-          results.length.should.equal(2);
+          results.length.should.equal(3);
           done();
         });
       });
     });
     it('should upsert', function (done) {
       //prove it isn't there...
-      collection.findOne({anew:1}, function (err, doc) {
-        (!!err).should.be.false;
+      collection.findOne({test:1}, function (err, doc) {
+        if(err) return done(err);
         (!!doc).should.be.false;
 
-        collection.update({anew:1}, {anew:1,bar:"none"}, {upsert:true}, function (err, count) {
-          (!!err).should.be.false;
+        collection.update({test:1}, {test:1,bar:"none"}, {upsert:true}, function (err, count) {
+          if(err) return done(err);
           count.should.equal(1);
 
-          collection.find({anew:1}, function (err, results) {
-            (!!err).should.be.false;
+          collection.find({test:1}, function (err, results) {
+            if(err) return done(err);
             (!!results).should.be.true;
             results.length.should.equal(1);
             done();
