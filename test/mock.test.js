@@ -22,25 +22,42 @@ describe('mock tests', function () {
       collection.createIndex({test:1}, {unique:true}, function (err, name) {
         if(err) return done(err);
         name.should.equal('test_1');
+        done();
+      });
+    });
 
-        collection.insert([{test:555, baz:1},{test:555,baz:2}], function (err, result) {
-          (!!err).should.be.true;
-          (!!result).should.be.false;
-          err.message.should.equal('E11000 duplicate key error index: mock_database.users.$test_1');
+    it('should deny unique constraint violations on insert', function (done) {
+      collection.insert([{test:333},{test:444},{test:555, baz:1},{test:555,baz:2}], function (err, result) {
+        (!!err).should.be.true;
+        (!!result).should.be.false;
+        err.message.should.equal('E11000 duplicate key error index: mock_database.users.$test_1');
 
-          //the first one should succeed
-          collection.findOne({test:555}, function (err, doc) {
-            if(err) return done(err);
-            (!!doc).should.be.true;
-            doc.should.have.property('baz', 1);
-            done();
-          });
+        //the first one should succeed
+        collection.findOne({test:555}, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property('baz', 1);
+          done();
+        });
+      });
+    });
+    it('should deny unique constraint violations on update', function (done) {
+      collection.update({test:333},{$set:{test:444,baz:2}}, function (err, result) {
+        (!!err).should.be.true;
+        (!!result).should.be.false;
+        err.message.should.equal('E11000 duplicate key error index: mock_database.users.$test_1');
+
+        //make sure it didn't update the data
+        collection.findOne({test:333}, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.not.have.property('baz');
+          done();
         });
       });
     });
 
   });
-
 
   describe('collections', function () {
     'insert,findOne,update,remove'.split(',').forEach(function(key) {
@@ -136,12 +153,12 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, count) {
         if(err) return done(err);
-        count.should.equal(3);
+        count.should.equal(5);
 
         collection.find({foo:"bar"}, function (err, results) {
           if(err) return done(err);
           (!!results).should.be.true;
-          results.length.should.equal(3);
+          results.length.should.equal(5);
           done();
         });
       });
