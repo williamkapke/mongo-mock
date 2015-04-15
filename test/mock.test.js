@@ -3,7 +3,7 @@ var ObjectId = require('bson-objectid');
 var id = ObjectId();
 var mongo = require('../');
 var MongoClient = mongo.MongoClient;
-MongoClient.persist = "mongo.json";
+MongoClient.persist = "mongo.js";
 
 describe('mock tests', function () {
   var connected_db;
