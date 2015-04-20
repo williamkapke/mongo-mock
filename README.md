@@ -15,12 +15,12 @@ Maybe you want to throw together a quick example app?
 var mongodb = require('mongo-mock');
 mongodb.max_delay = 0;//you can choose to NOT pretend to be async (default is 400ms)
 var MongoClient = mongodb.MongoClient;
+MongoClient.persist="mongo.js";//persist the data to disk
 
 // Connection URL
 var url = 'mongodb://localhost:27017/myproject';
 // Use connect method to connect to the Server
-var options = {persist:"myproject.json"};//persist the data to disk
-MongoClient.connect(url, options, function(err, db) {
+MongoClient.connect(url, {}, function(err, db) {
   // Get the documents collection
   var collection = db.collection('documents');
   // Insert some documents
