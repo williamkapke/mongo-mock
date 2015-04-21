@@ -17,6 +17,7 @@ describe('mock tests', function () {
     });
   });
 
+
   describe('indexes', function () {
     it('should create a unique index', function (done) {
       collection.createIndex({test:1}, {unique:true}, function (err, name) {
@@ -135,6 +136,15 @@ describe('mock tests', function () {
         done();
       });
     });
+
+    it('should NOT findOne if the collection has just been created', function (done) {
+      var collection = connected_db.collection('some_brand_new_collection');
+      collection.findOne({_id:"asdfasdf"}, function (err, doc) {
+        if(err) return done(err);
+        (!!doc).should.be.false;
+        done();
+      });
+    })
 
     it('should update one (default)', function (done) {
       //query, data, options, callback
