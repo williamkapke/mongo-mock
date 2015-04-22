@@ -148,9 +148,9 @@ describe('mock tests', function () {
 
     it('should update one (default)', function (done) {
       //query, data, options, callback
-      collection.update({test:123}, {$set:{foo:"bar"}}, function (err, count) {
+      collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
         if(err) return done(err);
-        count.should.equal(1);
+        result.n.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
@@ -161,9 +161,9 @@ describe('mock tests', function () {
       });
     });
     it('should update multi', function (done) {
-      collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, count) {
+      collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        count.should.equal(5);
+        result.n.should.equal(5);
 
         collection.find({foo:"bar"}, function (err, results) {
           if(err) return done(err);
@@ -179,9 +179,9 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!!doc).should.be.false;
 
-        collection.update({test:1}, {test:1,bar:"none"}, {upsert:true}, function (err, count) {
+        collection.update({test:1}, {test:1,bar:"none"}, {upsert:true}, function (err, result) {
           if(err) return done(err);
-          count.should.equal(1);
+          result.n.should.equal(1);
 
           collection.find({test:1}, function (err, results) {
             if(err) return done(err);
