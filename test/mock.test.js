@@ -124,7 +124,8 @@ describe('mock tests', function () {
       collection.findOne({_id:id}, function (err, doc) {
         if(err) return done(err);
         (!!doc).should.be.true;
-        doc.should.have.property('_id', id);
+        doc.should.have.property('_id');
+        id.str.should.eql(doc._id.str);
         doc.should.have.property('test', 456);
         done();
       });
