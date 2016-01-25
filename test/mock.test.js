@@ -166,10 +166,9 @@ describe('mock tests', function () {
         if(err) return done(err);
         result.n.should.equal(5);
 
-        collection.find({foo:"bar"}, function (err, results) {
+        collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          (!!results).should.be.true;
-          results.length.should.equal(5);
+          n.should.equal(5);
           done();
         });
       });
@@ -184,10 +183,9 @@ describe('mock tests', function () {
           if(err) return done(err);
           result.n.should.equal(1);
 
-          collection.find({test:1}, function (err, results) {
+          collection.find({test:1}).count(function (err, n) {
             if(err) return done(err);
-            (!!results).should.be.true;
-            results.length.should.equal(1);
+            n.should.equal(1);
             done();
           });
         });
