@@ -28,5 +28,6 @@
   },
   "devDependencies": {
     "should": "^5.2.0"
-  }
+  },
+  "engines" : { "node" : ">=0.12" }
 }
