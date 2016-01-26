@@ -27,19 +27,19 @@ MongoClient.connect(url, {}, function(err, db) {
   // Insert some documents
   var docs = [ {a : 1}, {a : 2}, {a : 3}];
   collection.insert(docs, function(err, result) {
-    console.log(result);
+    console.log('inserted',result);
 
     collection.update({ a : 2 }, { $set: { b : 1 } }, function(err, result) {
-      console.log(result);
+      console.log('updated',result);
 
       collection.findOne({a:2}, {b:1}, function(err, doc) {
-        console.log(doc);
+        console.log('foundOne', doc);
 
         collection.remove({ a : 3 }, function(err, result) {
-          console.log(result);
+          console.log('removed',result);
 
-          collection.find({}, {_id:-1}, function(err, docs) {
-            console.log(docs);
+          collection.find({}, {_id:-1}).toArray(function(err, docs) {
+            console.log('found',docs);
 
             setTimeout(db.close, 1000);
           });
