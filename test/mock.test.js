@@ -190,6 +190,39 @@ describe('mock tests', function () {
           });
         });
       });
-    })
+    });
+    it('should add to set (default)', function (done) {
+      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, result) {
+        if(err) return done(err);
+        result.n.should.equal(1);
+        collection.findOne({test:123}, function (err, doc) {
+          if(err) return done(err);
+          doc.should.have.property("boo", ["bar"]);
+          done();
+        });
+      });
+    });
+    it('should add to set', function (done) {
+      collection.update({test:123}, {$addToSet:{ boo:"foo"}}, function (err, result) {
+        if(err) return done(err);
+        result.n.should.equal(1);
+        collection.findOne({test:123}, function (err, doc) {
+          if(err) return done(err);
+          doc.should.have.property("boo", ["bar", "foo"]);
+          done();
+        });
+      });
+    });
+    it('should not add to set already existing item', function (done) {
+      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, result) {
+        if(err) return done(err);
+        result.n.should.equal(1);
+        collection.findOne({test:123}, function (err, doc) {
+          if(err) return done(err);
+          doc.should.have.property("boo", ["bar", "foo"]);
+          done();
+        });
+      });
+    });
   });
 });
