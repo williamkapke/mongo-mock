@@ -28,7 +28,7 @@ describe('mock tests', function () {
     });
 
     it('should deny unique constraint violations on insert', function (done) {
-      collection.insert([{test:333},{test:444},{test:555, baz:1},{test:555,baz:2}], function (err, result) {
+      collection.insertMany([{test:333},{test:444},{test:555, baz:1},{test:555,baz:2}], function (err, result) {
         (!!err).should.be.true;
         (!!result).should.be.false;
         err.message.should.equal('E11000 duplicate key error index: mock_database.users.$test_1');
@@ -69,7 +69,7 @@ describe('mock tests', function () {
     });
 
     it('should insert data', function (done) {
-      collection.insert({test:123}, function (err, result) {
+      collection.insertOne({test:123}, function (err, result) {
         if(err) return done(err);
         (!!result.ops).should.be.true;
         (!!result.ops[0]).should.be.true;
