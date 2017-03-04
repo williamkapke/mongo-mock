@@ -225,4 +225,42 @@ describe('mock tests', function () {
       });
     });
   });
+
+  describe('cursors', function() {
+    it('should return a count of found items', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('count');
+      crsr.count(function(err, cnt) {
+        cnt.should.equal(6);
+        done();
+      });
+    });
+
+    it('should skip 1 item', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('skip');
+      crsr.skip(1).toArray(function(err, res) {
+        res.length.should.equal(5);
+        done();
+      });
+    });
+
+    it('should limit to 3 items', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('limit');
+      crsr.limit(3).toArray(function(err, res) {
+        res.length.should.equal(3);
+        done();
+      });
+    });
+
+    it('should skip 1 item, limit to 3 items', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('limit');
+      crsr.skip(1).limit(3).toArray(function(err, res) {
+        res.length.should.equal(3);
+        done();
+      });
+    });
+  });
 });
