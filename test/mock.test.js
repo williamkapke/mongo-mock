@@ -224,6 +224,35 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should increment a number', function(done) {
+      // add some fields to increment
+      collection.update({test:333}, {$set: {incTest: 1, multiIncTest: { foo: 1 }}}, function (err, result) {
+        if (err) done(err);
+        collection.update({test:333}, { $inc: { incTest: 1, 'multiIncTest.foo': 2}}, function (err, result) {
+          if (err) done(err);
+          result.n.should.equal(1);
+          collection.findOne({test:333}, function (err, doc) {
+            if (err) done(err);
+            doc.incTest.should.equal(2);
+            doc.multiIncTest.foo.should.equal(3);
+            done();
+          });
+        });
+      });
+    });
+    it('should decrement a number', function(done) {
+      collection.update({test:333}, { $inc: { incTest: -1, 'multiIncTest.foo': -2, 'some.new.key': 42}}, function (err, result) {
+        if (err) done(err);
+        result.n.should.equal(1);
+        collection.findOne({test:333}, function (err, doc) {
+          if (err) done(err);
+          doc.incTest.should.equal(1);
+          doc.multiIncTest.foo.should.equal(1);
+          doc.some.new.key.should.equal(42);
+          done();
+        });
+      });
+    });
   });
 
   describe('cursors', function() {
