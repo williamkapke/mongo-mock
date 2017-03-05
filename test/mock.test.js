@@ -291,5 +291,21 @@ describe('mock tests', function () {
         done();
       });
     });
+
+    it('should count all items regardless of skip/limit', function (done) {
+      var crsr = collection.find({});
+      crsr.skip(1).limit(3).count(function(err, cnt) {
+        cnt.should.equal(6);
+        done();
+      });
+    });
+
+    it('should count only skip/limit results', function (done) {
+      var crsr = collection.find({});
+      crsr.skip(1).limit(3).count(true, function(err, cnt) {
+        cnt.should.equal(3);
+        done();
+      });
+    });
   });
 });
