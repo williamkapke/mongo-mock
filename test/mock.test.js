@@ -298,7 +298,8 @@ describe('mock tests', function () {
       crsr.should.have.property('sort');
       crsr.sort({test: 1}).toArray(function(err, res) {
         if (err) done(err);
-        res.should.eql(res.sort(function(a,b){return a.test - b.test}));
+        var sorted = _.clone(res).sort(function(a,b){return a.test - b.test});
+        res.should.eql(sorted);
         done();
       });
     });
