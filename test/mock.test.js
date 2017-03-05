@@ -307,5 +307,13 @@ describe('mock tests', function () {
         done();
       });
     });
+
+    it('should count only skip/limit results but return actual count if less than limit', function (done) {
+      var crsr = collection.find({});
+      crsr.skip(4).limit(3).count(true, function(err, cnt) {
+        cnt.should.equal(2);
+        done();
+      });
+    });
   });
 });
