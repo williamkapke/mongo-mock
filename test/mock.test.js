@@ -309,10 +309,29 @@ describe('mock tests', function () {
       });
     });
 
+    it('should toggle count applySkipLimit and not', function (done) {
+      var crsr = collection.find({}).skip(1).limit(3);
+      crsr.count(true, function(err, cnt) {
+        cnt.should.equal(3);
+        crsr.count(function(err, cnt) {
+          cnt.should.equal(6);
+          done();
+        });
+      });
+    });
+
     it('should count only skip/limit results but return actual count if less than limit', function (done) {
       var crsr = collection.find({});
       crsr.skip(4).limit(3).count(true, function(err, cnt) {
         cnt.should.equal(2);
+        done();
+      });
+    });
+
+    it('should count only skip/limit results for size', function (done) {
+      var crsr = collection.find({});
+      crsr.skip(2).limit(3).size(function(err, cnt) {
+        cnt.should.equal(3);
         done();
       });
     });
