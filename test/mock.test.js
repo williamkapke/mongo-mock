@@ -1,5 +1,6 @@
 var should = require('should');
 var ObjectId = require('bson-objectid');
+var _ = require('lodash');
 var id = ObjectId();
 var mongo = require('../');
 var MongoClient = mongo.MongoClient;
@@ -288,6 +289,28 @@ describe('mock tests', function () {
       crsr.should.have.property('limit');
       crsr.skip(1).limit(3).toArray(function(err, res) {
         res.length.should.equal(3);
+        done();
+      });
+    });
+
+    it('should sort results by `test` ascending', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('sort');
+      crsr.sort({test: 1}).toArray(function(err, res) {
+        if (err) done(err);
+        var sorted = _.clone(res).sort(function(a,b){return a.test - b.test});
+        res.should.eql(sorted);
+        done();
+      });
+    });
+
+    it('should sort results by `test` descending', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('sort');
+      crsr.sort({test: -1}).toArray(function(err, res) {
+        if (err) done(err);
+        var sorted = _.clone(res).sort(function(a,b){return b.test - a.test});
+        res.should.eql(sorted);
         done();
       });
     });
