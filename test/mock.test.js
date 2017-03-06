@@ -300,7 +300,7 @@ describe('mock tests', function () {
         done();
       });
     });
-    
+
     it('should count only skip/limit results', function (done) {
       var crsr = collection.find({});
       crsr.skip(1).limit(3).count(true, function(err, cnt) {
@@ -316,7 +316,7 @@ describe('mock tests', function () {
         done();
       });
     });
-    
+
     it('should sort results by `test` ascending', function (done) {
       var crsr = collection.find({});
       crsr.should.have.property('sort');
@@ -327,7 +327,7 @@ describe('mock tests', function () {
         done();
       });
     });
-        
+
     it('should sort results by `test` descending', function (done) {
       var crsr = collection.find({});
       crsr.should.have.property('sort');
