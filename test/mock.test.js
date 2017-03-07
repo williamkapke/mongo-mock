@@ -254,6 +254,19 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should count the number of items in the collection', function(done) {
+      collection.should.have.property('count');
+      collection.count({}, function(err, cnt) {
+        if (err) done(err);
+        cnt.should.equal(6);
+
+        collection.count({ test:333 }, function(err, singleCnt) {
+          if (err) done(err);
+          singleCnt.should.equal(1);
+          done();
+        });
+      });
+    });
   });
 
   describe('cursors', function() {
