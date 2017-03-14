@@ -8,7 +8,8 @@ module.exports = {
     setTimeout(callback, Math.random()*(delay));
   },
   find_options: find_options,
-  get MongoClient() { return require('./lib/mongo_client.js') }
+  get MongoClient() { return require('./lib/mongo_client.js') },
+  get ObjectId() { return require('bson-objectid') }
 };
 
 var noop = Boolean;
