@@ -1,9 +1,9 @@
 var should = require('should');
-var ObjectId = require('bson-objectid');
 var _ = require('lodash');
-var id = ObjectId();
 var mongo = require('../');
 var MongoClient = mongo.MongoClient;
+var ObjectId = mongo.ObjectId;
+var id = ObjectId();
 MongoClient.persist = "mongo.js";
 
 describe('mock tests', function () {
