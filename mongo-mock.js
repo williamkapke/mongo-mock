@@ -9,7 +9,8 @@ module.exports = {
   },
   find_options: find_options,
   get MongoClient() { return require('./lib/mongo_client.js') },
-  get ObjectId() { return require('bson-objectid') }
+  get ObjectId() { return require('bson-objectid') },
+  get ObjectID() { return require('bson-objectid') }
 };
 
 var noop = Boolean;
