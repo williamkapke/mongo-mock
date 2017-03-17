@@ -62,7 +62,7 @@ describe('mock tests', function () {
   });
 
   describe('collections', function () {
-    'insert,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
+    'insert,insertOne,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
       it("should have a '"+key+"' function", function () {
         collection.should.have.property(key);
         collection[key].should.be.type('function');
