@@ -78,7 +78,7 @@ describe('mock tests', function () {
         result.ops[0]._id.toString().should.have.length(24);
         result.ops[0].should.have.property('test', 123);
         result.should.have.property('insertedId');
-        result.should.have.property('insertedIds');
+        result.should.have.property('insertedCount');
         done();
       });
     });
