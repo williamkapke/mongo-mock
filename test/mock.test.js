@@ -2,8 +2,8 @@ var should = require('should');
 var _ = require('lodash');
 var mongo = require('../');
 var MongoClient = mongo.MongoClient;
-var ObjectId = mongo.ObjectId;
-var id = ObjectId();
+var ObjectID = mongo.ObjectID;
+var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 describe('mock tests', function () {
@@ -121,7 +121,7 @@ describe('mock tests', function () {
         done();
       });
     });
-    it('should findOne by an ObjectId', function (done) {
+    it('should findOne by an ObjectID', function (done) {
       collection.findOne({_id:id}, function (err, doc) {
         if(err) return done(err);
         (!!doc).should.be.true;
