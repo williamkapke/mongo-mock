@@ -19,6 +19,35 @@ describe('mock tests', function () {
   });
 
 
+  describe('databases', function() {
+    it('should list collections', function(done) {
+      var listCollectionName = "test_databases_listCollections_collection";
+      connected_db.createCollection(listCollectionName, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.listCollections().toArray(function(err, items) {
+          if(err) return done(err);
+          var instance = _.find(items, {name:listCollectionName} );
+          instance.should.not.be.undefined;
+          done();
+        });  
+      });
+    });
+    it('should drop collection', function (done) {
+      var dropCollectionName = "test_databases_dropCollection_collection";
+      connected_db.createCollection(dropCollectionName, function (err, dropCollection){
+        if(err) return done(err);
+        connected_db.dropCollection(dropCollectionName, function (err, result) {
+          if(err) return done(err);
+          connected_db.listCollections().toArray(function(err, items) {
+            var instance = _.find(items, {name:dropCollectionName} );
+            (instance === undefined).should.be.true;
+            done();
+          });
+        });
+      });
+    });
+  });
+
   describe('indexes', function () {
     it('should create a unique index', function (done) {
       collection.createIndex({test:1}, {unique:true}, function (err, name) {
@@ -62,7 +91,7 @@ describe('mock tests', function () {
   });
 
   describe('collections', function () {
-    'insert,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
+    'drop,insert,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
       it("should have a '"+key+"' function", function () {
         collection.should.have.property(key);
         collection[key].should.be.type('function');
@@ -265,6 +294,21 @@ describe('mock tests', function () {
           singleCnt.should.equal(1);
           done();
         });
+      });
+    });
+    it('should drop themselves', function(done) {
+      var dropCollectionName = "test_collections_drop_collection";
+      connected_db.createCollection(dropCollectionName, function(err, dropCollection) {
+        if(err) return done(err);
+        dropCollection.drop(function(err, reply) {
+          if(err) return done(err);
+          connected_db.listCollections().toArray(function(err, items) {
+            if(err) return done(err);
+            var instance = _.find(items, {name:dropCollectionName} );
+            (instance === undefined).should.be.true;
+            done();
+          });
+        });  
       });
     });
   });
