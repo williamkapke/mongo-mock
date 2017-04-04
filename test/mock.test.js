@@ -88,7 +88,33 @@ describe('mock tests', function () {
       });
     });
 
-  });
+    it('should create a non-unique index', function (done) {
+      collection.createIndex({test_nonunique:1}, {unique:false}, function (err, name) {
+        if(err) return done(err);
+        name.should.equal('test_nonunique_1');
+        done();
+      });
+    });
+
+    it('should allow insert with same non-unique index property', function (done) {
+      collection.insertMany([
+          {test:3333, test_nonunique:3333},
+          {test:4444, test_nonunique:4444},
+          {test:5555, test_nonunique:3333}], function (err, result) {
+        (!!err).should.be.false;
+        result.result.ok.should.be.eql(1);
+        result.result.n.should.eql(3);
+        done();
+      });
+    });
+    it('should allow update with same non-unique index property', function (done) {
+      collection.update({test:4444}, {$set:{test_nonunique:3333}}, function (err, result) {
+        (!!err).should.be.false;
+        result.n.should.eql(1);
+        done();
+      });
+    });
+});
 
   describe('collections', function () {
     'drop,insert,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
@@ -194,11 +220,11 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(5);
+        result.n.should.equal(8);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(5);
+          n.should.equal(8);
           done();
         });
       });
@@ -287,7 +313,7 @@ describe('mock tests', function () {
       collection.should.have.property('count');
       collection.count({}, function(err, cnt) {
         if (err) done(err);
-        cnt.should.equal(6);
+        cnt.should.equal(9);
 
         collection.count({ test:333 }, function(err, singleCnt) {
           if (err) done(err);
@@ -318,7 +344,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('count');
       crsr.count(function(err, cnt) {
-        cnt.should.equal(6);
+        cnt.should.equal(9);
         done();
       });
     });
@@ -327,7 +353,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('skip');
       crsr.skip(1).toArray(function(err, res) {
-        res.length.should.equal(5);
+        res.length.should.equal(8);
         done();
       });
     });
@@ -353,7 +379,7 @@ describe('mock tests', function () {
     it('should count all items regardless of skip/limit', function (done) {
       var crsr = collection.find({});
       crsr.skip(1).limit(3).count(function(err, cnt) {
-        cnt.should.equal(6);
+        cnt.should.equal(9);
         done();
       });
     });
@@ -371,7 +397,7 @@ describe('mock tests', function () {
       crsr.count(true, function(err, cnt) {
         cnt.should.equal(3);
         crsr.count(function(err, cnt) {
-          cnt.should.equal(6);
+          cnt.should.equal(9);
           done();
         });
       });
@@ -379,8 +405,8 @@ describe('mock tests', function () {
 
     it('should count only skip/limit results but return actual count if less than limit', function (done) {
       var crsr = collection.find({});
-      crsr.skip(4).limit(3).count(true, function(err, cnt) {
-        cnt.should.equal(2);
+      crsr.skip(4).limit(6).count(true, function(err, cnt) {
+        cnt.should.equal(5);
         done();
       });
     });
