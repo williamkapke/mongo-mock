@@ -96,6 +96,18 @@ describe('mock tests', function () {
       });
     });
 
+    it('should create a non-unique index by default', function (done) {
+      collection.createIndex({test_nonunique_default:1}, {}, function (err, name) {
+        if(err) return done(err);
+        collection.indexInformation({full:true}, function (err, indexes) {
+          if(err) return done(err);
+          var index = _.where(indexes, {name: 'test_nonunique_default_1'})[0];
+          index.unique.should.be.false;
+          done();
+        });
+      });
+    });
+
     it('should allow insert with same non-unique index property', function (done) {
       collection.insertMany([
           {test:3333, test_nonunique:3333},
