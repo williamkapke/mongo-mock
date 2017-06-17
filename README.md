@@ -40,8 +40,20 @@ MongoClient.connect(url, {}, function(err, db) {
 
           collection.find({}, {_id:-1}).toArray(function(err, docs) {
             console.log('found',docs);
-
-            setTimeout(db.close, 1000);
+            
+            function cleanup(){            
+              var state = collection.toJSON();
+              // Do whatever you want. It's just an Array of Objects.
+              state.documents.push({a : 2});
+              
+              // truncate
+              state.documents.length = 0;
+              
+              // closing connection
+              db.close();
+            }
+            
+            setTimeout(cleanup, 1000);
           });
         });
       });
