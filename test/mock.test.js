@@ -192,6 +192,65 @@ describe('mock tests', function () {
         });
       });
     });
+    /***************/
+    it('should delete one', function (done) {
+      //query, data, options, callback
+      collection.insert({test:967, delete: true}, function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+
+        collection.deleteOne({test:967}, function (err, result) {
+          if (err) return done(err);
+          result.result.n.should.equal(1);
+
+          collection.findOne({test: 967}, function (err, doc) {
+            if (err) return done(err);
+            (!!doc).should.be.false;
+            done();
+          });
+        });
+      });
+    });
+    it('should delete one and only one', function (done) {
+      //query, data, options, callback
+      collection.insertMany([{test:967, delete: true}, {test:5309, delete: true}], function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+
+        collection.deleteOne({delete: true}, function (err, result) {
+          if (err) return done(err);
+          result.result.n.should.equal(1);
+
+          collection.find({delete: true}).count(function (err, n) {
+            if (err) return done(err);
+            n.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
+    it('should delete many', function (done) {
+      //query, data, options, callback
+      collection.insertOne({test:967, delete: true}, function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+        collection.find({delete: true}).count(function (err, n) {
+          if (err) return done(err);
+          n.should.equal(2);
+
+          collection.deleteMany({delete: true}, function (err, result) {
+            if (err) return done(err);
+            result.result.n.should.equal(2);
+
+            collection.find({delete: true}).count(function (err, n) {
+              if (err) return done(err);
+              n.should.equal(0);
+              done();
+            });
+          });
+        });
+      });
+    });
     it('should add to set (default)', function (done) {
       collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, result) {
         if(err) return done(err);
