@@ -176,6 +176,30 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should update subdocs in dot notation', function (done) {
+      collection.update({}, {$set:{"update.subdocument":true}}, function (err, result) {
+        if(err) return done(err);
+        result.n.should.equal(1);
+
+        collection.find({"update.subdocument":true}).count(function (err, n) {
+          if(err) return done(err);
+          n.should.equal(1);
+          done();
+        });
+      });
+    });
+    it('should update subdoc arrays in dot notation', function (done) {
+      collection.update({}, {$set:{"update.arr.0": true}}, function (err, result) {
+        if(err) return done(err);
+        result.n.should.equal(1);
+
+        collection.find({"update.arr.0": true}).count(function (err, n) {
+          if(err) return done(err);
+          n.should.equal(1);
+          done();
+        });
+      });
+    });
     it('should upsert', function (done) {
       //prove it isn't there...
       collection.findOne({test:1}, function (err, doc) {
