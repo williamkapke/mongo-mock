@@ -29,7 +29,7 @@ describe('mock tests', function () {
           var instance = _.find(items, {name:listCollectionName} );
           instance.should.not.be.undefined;
           done();
-        });  
+        });
       });
     });
     it('should drop collection', function (done) {
@@ -129,7 +129,7 @@ describe('mock tests', function () {
 });
 
   describe('collections', function () {
-    'drop,insert,findOne,update,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
+    'drop,insert,findOne,findOneAndUpdate,update,updateOne,updateMany,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
       it("should have a '"+key+"' function", function () {
         collection.should.have.property(key);
         collection[key].should.be.type('function');
@@ -217,6 +217,21 @@ describe('mock tests', function () {
       });
     })
 
+    it('should update one (updateOne)', function (done) {
+      //query, data, options, callback
+      collection.updateOne({test:123}, {$set:{foo:"buzz"}}, function (err, opResult) {
+        if(err) return done(err);
+        opResult.result.n.should.equal(1);
+
+        collection.findOne({test:123}, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "buzz");
+          done();
+        });
+      });
+    });
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
@@ -237,6 +252,21 @@ describe('mock tests', function () {
         result.n.should.equal(8);
 
         collection.find({foo:"bar"}).count(function (err, n) {
+          if(err) return done(err);
+          n.should.equal(8);
+          done();
+        });
+      });
+    });
+    it('should updateMany', function (done) {
+      collection.updateMany({}, {$set:{updateMany:"bar"}}, function (err, opResult) {
+        if(err) return done(err);
+        opResult.result.n.should.equal(8);
+        opResult.result.nModified.should.equal(8);
+        opResult.matchedCount.should.equal(8);
+        opResult.modifiedCount.should.equal(8);
+
+        collection.find({updateMany:"bar"}).count(function (err, n) {
           if(err) return done(err);
           n.should.equal(8);
           done();
@@ -278,6 +308,24 @@ describe('mock tests', function () {
           result.n.should.equal(1);
 
           collection.find({test:1}).count(function (err, n) {
+            if(err) return done(err);
+            n.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
+    it('should upsert (updateMany)', function (done) {
+      //prove it isn't there...
+      collection.findOne({upsertMany:1}, function (err, doc) {
+        if(err) return done(err);
+        (!!doc).should.be.false;
+
+        collection.updateMany({upsertMany:1}, {upsertMany:1,bar:"none"}, {upsert:true}, function (err, opResult) {
+          if(err) return done(err);
+          opResult.result.n.should.equal(1);
+
+          collection.find({upsertMany:1}).count(function (err, n) {
             if(err) return done(err);
             n.should.equal(1);
             done();
@@ -410,7 +458,7 @@ describe('mock tests', function () {
       collection.should.have.property('count');
       collection.count({}, function(err, cnt) {
         if (err) done(err);
-        cnt.should.equal(9);
+        cnt.should.equal(10);
 
         collection.count({ test:333 }, function(err, singleCnt) {
           if (err) done(err);
@@ -431,7 +479,7 @@ describe('mock tests', function () {
             (instance === undefined).should.be.true;
             done();
           });
-        });  
+        });
       });
     });
   });
@@ -441,7 +489,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('count');
       crsr.count(function(err, cnt) {
-        cnt.should.equal(9);
+        cnt.should.equal(10);
         done();
       });
     });
@@ -450,7 +498,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('skip');
       crsr.skip(1).toArray(function(err, res) {
-        res.length.should.equal(8);
+        res.length.should.equal(9);
         done();
       });
     });
@@ -476,7 +524,7 @@ describe('mock tests', function () {
     it('should count all items regardless of skip/limit', function (done) {
       var crsr = collection.find({});
       crsr.skip(1).limit(3).count(function(err, cnt) {
-        cnt.should.equal(9);
+        cnt.should.equal(10);
         done();
       });
     });
@@ -494,7 +542,7 @@ describe('mock tests', function () {
       crsr.count(true, function(err, cnt) {
         cnt.should.equal(3);
         crsr.count(function(err, cnt) {
-          cnt.should.equal(9);
+          cnt.should.equal(10);
           done();
         });
       });
@@ -503,7 +551,7 @@ describe('mock tests', function () {
     it('should count only skip/limit results but return actual count if less than limit', function (done) {
       var crsr = collection.find({});
       crsr.skip(4).limit(6).count(true, function(err, cnt) {
-        cnt.should.equal(5);
+        cnt.should.equal(6);
         done();
       });
     });
