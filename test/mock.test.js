@@ -6,6 +6,9 @@ var ObjectID = mongo.ObjectID;
 var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
+// this number is used in all the query/find tests, so it's easier to add more docs
+var EXPECTED_TOTAL_TEST_DOCS = 10;  
+
 describe('mock tests', function () {
   var connected_db;
   var collection;
@@ -454,11 +457,41 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should push item into array', function (done) {
+      collection.update({test:333}, { $set: {pushTest: []}}, function (err, result) {
+        if (err) done(err);
+        collection.update({test:333}, { $push:{ pushTest: {$each: [ 2 ]} }} ,function (err, result) {
+          if (err) done(err);
+          result.n.should.equal(1);
+          collection.findOne({test:333}, function (err, doc) {
+            if (err) done(err);
+            doc.pushTest.should.have.length(1);
+            doc.pushTest.should.containEql(2);
+            done();
+          });
+        });
+      });
+    });
+    it('should push item into array + $slice', function (done) {
+      collection.update({test:333}, { $set: {pushTest: []}}, function (err, result) {
+        if (err) done(err);
+        collection.update({test:333}, { $push:{ pushTest: {$each: [ 1, 2, 3, 4 ], $slice: -2 } }} ,function (err, result) {
+          if (err) done(err);
+          result.n.should.equal(1);
+          collection.findOne({test:333}, function (err, doc) {
+            if (err) done(err);
+            doc.pushTest.should.have.length(2);
+            doc.pushTest.should.containEql(3, 4);
+            done();
+          });
+        });
+      });
+    });
     it('should count the number of items in the collection', function(done) {
       collection.should.have.property('count');
       collection.count({}, function(err, cnt) {
         if (err) done(err);
-        cnt.should.equal(10);
+        cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
 
         collection.count({ test:333 }, function(err, singleCnt) {
           if (err) done(err);
@@ -489,7 +522,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('count');
       crsr.count(function(err, cnt) {
-        cnt.should.equal(10);
+        cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
         done();
       });
     });
@@ -498,7 +531,7 @@ describe('mock tests', function () {
       var crsr = collection.find({});
       crsr.should.have.property('skip');
       crsr.skip(1).toArray(function(err, res) {
-        res.length.should.equal(9);
+        res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS - 1);
         done();
       });
     });
@@ -524,7 +557,7 @@ describe('mock tests', function () {
     it('should count all items regardless of skip/limit', function (done) {
       var crsr = collection.find({});
       crsr.skip(1).limit(3).count(function(err, cnt) {
-        cnt.should.equal(10);
+        cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
         done();
       });
     });
@@ -542,7 +575,7 @@ describe('mock tests', function () {
       crsr.count(true, function(err, cnt) {
         cnt.should.equal(3);
         crsr.count(function(err, cnt) {
-          cnt.should.equal(10);
+          cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
           done();
         });
       });
