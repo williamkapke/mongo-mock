@@ -26,7 +26,7 @@ MongoClient.connect(url, {}, function(err, db) {
   var collection = db.collection('documents');
   // Insert some documents
   var docs = [ {a : 1}, {a : 2}, {a : 3}];
-  collection.insert(docs, function(err, result) {
+  collection.insertMany(docs, function(err, result) {
     console.log('inserted',result);
 
     collection.updateOne({ a : 2 }, { $set: { b : 1 } }, function(err, result) {
