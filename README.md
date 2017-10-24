@@ -26,16 +26,16 @@ MongoClient.connect(url, {}, function(err, db) {
   var collection = db.collection('documents');
   // Insert some documents
   var docs = [ {a : 1}, {a : 2}, {a : 3}];
-  collection.insert(docs, function(err, result) {
+  collection.insertMany(docs, function(err, result) {
     console.log('inserted',result);
 
-    collection.update({ a : 2 }, { $set: { b : 1 } }, function(err, result) {
+    collection.updateOne({ a : 2 }, { $set: { b : 1 } }, function(err, result) {
       console.log('updated',result);
 
       collection.findOne({a:2}, {b:1}, function(err, doc) {
         console.log('foundOne', doc);
 
-        collection.remove({ a : 3 }, function(err, result) {
+        collection.removeOne({ a : 3 }, function(err, result) {
           console.log('removed',result);
 
           collection.find({}, {_id:-1}).toArray(function(err, docs) {
