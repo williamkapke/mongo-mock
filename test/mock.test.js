@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 10;  
+var EXPECTED_TOTAL_TEST_DOCS = 11;
 
 describe('mock tests', function () {
   var connected_db;
@@ -473,10 +473,22 @@ describe('mock tests', function () {
       });
     });
     it('should push item into array that does not yet exist on the doc', function (done) {
-      collection.update({test:333}, { $push:{ newPushTest: {$each: [ 2 ]} }} ,function (err, result) {
+      collection.update({test:333}, { $push:{ newPushTest: {$each: [ 2 ]} }}, function (err, result) {
         if (err) done(err);
         result.n.should.equal(1);
         collection.findOne({test: 333}, function (err, doc) {
+          if (err) done(err);
+          doc.newPushTest.should.have.length(1);
+          doc.newPushTest.should.containEql(2);
+          done();
+        });
+      });
+    });
+    it('should push item into array that does not yet exist on the doc (with an upsert)', function (done) {
+      collection.update({test:789}, { $set: {test: 789}, $push:{ newPushTest: {$each: [ 2 ]} }}, {upsert: true}, function (err, result) {
+        if (err) done(err);
+        result.n.should.equal(1);
+        collection.findOne({test: 789}, function (err, doc) {
           if (err) done(err);
           doc.newPushTest.should.have.length(1);
           doc.newPushTest.should.containEql(2);
@@ -610,7 +622,7 @@ describe('mock tests', function () {
     });
 
     it('should sort results by `test` ascending', function (done) {
-      var crsr = collection.find({});
+      var crsr = collection.find({test: {$exists: true}});
       crsr.should.have.property('sort');
       crsr.sort({test: 1}).toArray(function(err, res) {
         if (err) done(err);
