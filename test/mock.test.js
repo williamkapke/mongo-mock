@@ -46,6 +46,25 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should load another db', function (done) {
+      var otherCollectionName = 'someOtherCollection';
+      var otherDb = connected_db.db('some_other_mock_database');
+      otherDb.createCollection(otherCollectionName, function (err, otherCollection) {
+        if(err) return done(err);
+        connected_db.listCollections().toArray(function(err, mainCollections) {
+          if(err) return done(err);
+          otherDb.listCollections().toArray(function(err, otherCollections) {
+            // otherDb should have a separate list of collections
+            if(err) return done(err);
+            var otherInstance = _.find(otherCollections, {name:otherCollectionName} );
+            otherInstance.should.not.be.undefined;
+            var mainInstance = _.find(mainCollections, {name:otherCollectionName} );
+            (mainInstance === undefined).should.be.true;
+            done();
+          });
+        });
+      });
+    });
   });
 
   describe('indexes', function () {
