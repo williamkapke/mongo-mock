@@ -558,6 +558,30 @@ describe('mock tests', function () {
       });
     });
 
+    it('should limit the fields in the documents using project', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('project');
+      crsr.project({ _id: 1 }).toArray(function(err, res) {
+        res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+        res.forEach(doc => {
+          Object.keys(doc).should.eql(['_id']);
+        });
+        done();
+      });
+    });
+
+    it('should remove property/properites from the documents', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('project');
+      crsr.project({ _id: -1, foo: -1 }).toArray(function(err, res) {
+        res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+        res.forEach(doc => {
+          doc.should.not.have.keys('_id', 'foo');
+        });
+        done();
+      });
+    });
+
     it('should skip 1 item', function (done) {
       var crsr = collection.find({});
       crsr.should.have.property('skip');
