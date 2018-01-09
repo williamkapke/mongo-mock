@@ -563,7 +563,7 @@ describe('mock tests', function () {
       crsr.should.have.property('project');
       crsr.project({ _id: 1 }).toArray(function(err, res) {
         res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
-        res.forEach(doc => {
+        res.forEach(function(doc) {
           Object.keys(doc).should.eql(['_id']);
         });
         done();
@@ -575,7 +575,7 @@ describe('mock tests', function () {
       crsr.should.have.property('project');
       crsr.project({ _id: -1, foo: -1 }).toArray(function(err, res) {
         res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
-        res.forEach(doc => {
+        res.forEach(function(doc) {
           doc.should.not.have.keys('_id', 'foo');
         });
         done();
