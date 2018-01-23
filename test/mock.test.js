@@ -343,7 +343,7 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!!doc).should.be.false;
 
-        collection.updateMany({upsertMany:1}, {upsertMany:1,bar:"none"}, {upsert:true}, function (err, opResult) {
+        collection.updateMany({upsertMany:1}, { $set:{upsertMany:1,bar:"none"} }, {upsert:true}, function (err, opResult) {
           if(err) return done(err);
           opResult.result.n.should.equal(1);
 
