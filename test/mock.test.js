@@ -193,14 +193,13 @@ describe('mock tests', function () {
         done();
       });
     });
-    it('should return only the fields specified', function (done) {
-      collection.findOne({test:456}, {foo:1}, function (err, doc) {
-        if(err) return done(err);
+    it('should return only the fields specified', () =>
+      collection.findOne({test:456}, {foo:1})
+      .then(doc => {
         (!!doc).should.be.true;
-        doc.should.eql({foo:true});
-        done();
-      });
-    });
+        Object.keys(doc).should.eql(['foo', '_id']);
+      })
+    );
     it('should accept undefined fields', function (done) {
       collection.findOne({test:456}, undefined, function (err, doc) {
         if(err) return done(err);
@@ -573,7 +572,7 @@ describe('mock tests', function () {
     it('should remove property/properites from the documents', function (done) {
       var crsr = collection.find({});
       crsr.should.have.property('project');
-      crsr.project({ _id: -1, foo: -1 }).toArray(function(err, res) {
+      crsr.project({ _id: 0, foo: 0 }).toArray(function(err, res) {
         res.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
         res.forEach(function(doc) {
           doc.should.not.have.keys('_id', 'foo');
