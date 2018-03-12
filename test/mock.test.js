@@ -193,6 +193,13 @@ describe('mock tests', function () {
         done();
       });
     });
+    it('should return only the fields specified by field projection', () =>
+      collection.findOne({test:456}, {projection: {foo:1}})
+      .then(doc => {
+        (!!doc).should.be.true;
+        Object.keys(doc).should.eql(['foo', '_id']);
+      })
+    );
     it('should return only the fields specified', () =>
       collection.findOne({test:456}, {foo:1})
       .then(doc => {
