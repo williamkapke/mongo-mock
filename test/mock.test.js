@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 10;  
+var EXPECTED_TOTAL_TEST_DOCS = 11;  
 
 describe('mock tests', function () {
   var connected_db;
@@ -151,7 +151,7 @@ describe('mock tests', function () {
 });
 
   describe('collections', function () {
-    'drop,insert,findOne,findOneAndUpdate,update,updateOne,updateMany,remove,deleteOne,deleteMany'.split(',').forEach(function(key) {
+    'drop,insert,findOne,findOneAndUpdate,update,updateOne,updateMany,remove,deleteOne,deleteMany,save'.split(',').forEach(function(key) {
       it("should have a '"+key+"' function", function () {
         collection.should.have.property(key);
         collection[key].should.be.type('function');
@@ -347,6 +347,42 @@ describe('mock tests', function () {
           opResult.result.n.should.equal(1);
 
           collection.find({upsertMany:1}).count(function (err, n) {
+            if(err) return done(err);
+            n.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
+    it('should save (no _id)', function (done) {
+      //prove it isn't there...
+      collection.findOne({test:2}, function (err, doc) {
+        if(err) return done(err);
+        (!!doc).should.be.false;
+
+        collection.save({test:2,bar:"none"}, function (err, result) {
+          if(err) return done(err);
+          result.n.should.equal(1);
+
+          collection.find({test:2}).count(function (err, n) {
+            if(err) return done(err);
+            n.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
+    it('should save (with _id)', function (done) {
+      //prove it isn't there...
+      collection.findOne({test:2}, function (err, doc) {
+        if(err) return done(err);
+        (!doc).should.be.false;
+
+        collection.save({_id: doc._id,test:3,bar:"none"}, function (err, result) {
+          if(err) return done(err);
+          result.n.should.equal(1);
+
+          collection.find({test:3}).count(function (err, n) {
             if(err) return done(err);
             n.should.equal(1);
             done();
