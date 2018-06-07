@@ -672,5 +672,16 @@ describe('mock tests', function () {
         done();
       });
     });
+
+    it('should map results', function (done) {
+      var crsr = collection.find({});
+      crsr.should.have.property('map');
+      crsr.map(c => c.test).toArray(function(err, res) {
+        if (err) done(err);
+        var sampleTest = 333;
+        res.should.containEql(sampleTest);
+        done();
+      });
+    });
   });
 });
