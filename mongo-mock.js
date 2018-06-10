@@ -49,6 +49,7 @@ function find_options(args) {
         if(args[1].skip) options.skip = args[1].skip;
         if(args[1].limit) options.limit = args[1].limit;
         if(args[1].fields) options.fields = args[1].fields;
+        if(args[1].projection) options.fields = args[1].projection;
       }
       break;
     //selector, fields, options, callback?
@@ -57,6 +58,7 @@ function find_options(args) {
       if(args[2].skip) options.skip = args[2].skip;
       if(args[2].limit) options.limit = args[2].limit;
       if(args[2].fields) options.fields = args[2].fields;
+      if(args[2].projection) options.fields = args[2].projection;
       break;
     //selector, fields, skip, limit, timeout, callback?
     case "object,object,number,number,number":
