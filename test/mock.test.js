@@ -260,6 +260,23 @@ describe('mock tests', function () {
       });
     });
 
+    it('should update one (findOneAndUpdate)', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({test:123}, {$set:{foo:"john"}}, function (err, opResult) {
+        if(err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.ok.should.equal(1);
+        opResult.value.should.have.property("foo", "john");
+
+        collection.findOne({test:123}, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "john");
+          done();
+        });
+      });
+    });
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
