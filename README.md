@@ -1,5 +1,5 @@
-mongo-mock &nbsp;&nbsp;&nbsp;&nbsp;[![Circle CI](https://circleci.com/gh/williamkapke/mongo-mock/tree/master.svg?style=svg)](https://circleci.com/gh/williamkapke/mongo-mock/tree/master)
-==========
+mongo-mock &nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/williamkapke/mongo-mock.svg?branch=master)](https://travis-ci.org/williamkapke/mongo-mock)
+=======================================================================================================================================================================
 
 This is an in-memory _'pretend'_ mongodb. The goal is to make the interface compatible with
 [the real mongodb](https://github.com/mongodb/node-mongodb-native) module so they are interchangeable.

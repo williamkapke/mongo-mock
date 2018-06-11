@@ -1,7 +1,7 @@
 {
   "author": "William Kapke",
   "name": "mongo-mock",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Let's pretend we have a real MongoDB",
   "main": "mongo-mock.js",
   "scripts": {
@@ -32,6 +32,6 @@
     "should": "^5"
   },
   "engines": {
-    "node": ">=0.12"
+    "node": ">=6"
   }
 }
