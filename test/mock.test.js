@@ -355,7 +355,7 @@ describe('mock tests', function () {
         .then(r2 =>
           collection.findOne({test: 237})
           .then(doc => {
-            let copy = {...doc};
+            let copy = _.clone(doc);
             delete copy._id;
             JSON.stringify(copy).should.eql(expected);
           })
