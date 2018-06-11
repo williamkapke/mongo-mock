@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 11;
+var EXPECTED_TOTAL_TEST_DOCS = 12;
 
 describe('mock tests', function () {
   var connected_db;
@@ -344,6 +344,25 @@ describe('mock tests', function () {
           done();
         });
       });
+    });
+    it('should $unset', function (done) {
+      var original = { test: 237, parent0 :999, parent1 :{ child1 :111, child2 :222, child3 :333, child4 :{ child5 :555}}};
+      var expected = '{"test":237,"parent1":{"child1":111,"child3":333,"child4":{}}}';
+
+      collection.insert(original)
+      .then(r1 =>
+        collection.update({test: 237}, {$unset: { "parent0": 1, "parent1.child2": 1, "parent1.child4.child5": 1 }})
+        .then(r2 =>
+          collection.findOne({test: 237})
+          .then(doc => {
+            let copy = {...doc};
+            delete copy._id;
+            JSON.stringify(copy).should.eql(expected);
+          })
+        )
+      )
+      .then(done)
+      .catch(done)
     });
     it('should upsert', function (done) {
       //prove it isn't there...
