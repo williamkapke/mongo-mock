@@ -126,7 +126,7 @@ describe('mock tests', function () {
         if(err) return done(err);
         collection.indexInformation({full:true}, function (err, indexes) {
           if(err) return done(err);
-          var index = _.where(indexes, {name: 'test_nonunique_default_1'})[0];
+          var index = _.filter(indexes, {name: 'test_nonunique_default_1'})[0];
           index.unique.should.be.false;
           done();
         });
