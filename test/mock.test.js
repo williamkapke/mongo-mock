@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 11;  
+var EXPECTED_TOTAL_TEST_DOCS = 11;
 
 describe('mock tests', function () {
   var connected_db;
@@ -719,7 +719,12 @@ describe('mock tests', function () {
       crsr.should.have.property('sort');
       crsr.sort({test: 1}).toArray(function(err, res) {
         if (err) done(err);
-        var sorted = _.clone(res).sort(function(a,b){return a.test - b.test});
+
+        var sorted = res.sort(function(a,b) {
+          a = typeof a.test === 'undefined' ? null : a.test;
+          b = typeof b.test === 'undefined' ? null : b.test;
+          return a - b;
+        });
         res.should.eql(sorted);
         done();
       });
@@ -730,7 +735,12 @@ describe('mock tests', function () {
       crsr.should.have.property('sort');
       crsr.sort({test: -1}).toArray(function(err, res) {
         if (err) done(err);
-        var sorted = _.clone(res).sort(function(a,b){return b.test - a.test});
+
+        var sorted = res.sort(function(a,b) {
+          a = typeof a.test === 'undefined' ? null : a.test;
+          b = typeof b.test === 'undefined' ? null : b.test;
+          return b - a;
+        });
         res.should.eql(sorted);
         done();
       });
