@@ -40,8 +40,16 @@ describe('options tests', function () {
     var options = find_options({_id:"ABC123"}, {fields:{_id:-1}, skip:100});
     options.should.eql({ callback:noop, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
   });
+  it('should accept signature: "selector, options"', function(){
+    var options = find_options({_id:"ABC123"}, {projection:{_id:-1}, skip:100});
+    options.should.eql({ callback:noop, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
+  });
   it('should accept signature: "selector, options, callback"', function(){
     var options = find_options({_id:"ABC123"}, {fields:{_id:-1}, skip:100}, cb);
+    options.should.eql({ callback:cb, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
+  });
+  it('should accept signature: "selector, options, callback"', function(){
+    var options = find_options({_id:"ABC123"}, {projection:{_id:-1}, skip:100}, cb);
     options.should.eql({ callback:cb, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
   });
   it('should accept signature: "selector, fields, options"', function(){
