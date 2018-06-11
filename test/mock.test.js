@@ -20,6 +20,9 @@ describe('mock tests', function () {
       done();
     });
   });
+  after(function(done) {
+    connected_db.close().then(done).catch(done)
+  });
 
 
   describe('databases', function() {
@@ -63,7 +66,7 @@ describe('mock tests', function () {
             otherInstance.should.not.be.undefined;
             var mainInstance = _.find(mainCollections, {name:otherCollectionName} );
             (mainInstance === undefined).should.be.true;
-            done();
+            otherDb.close().then(done).catch(done);
           });
         });
       });
