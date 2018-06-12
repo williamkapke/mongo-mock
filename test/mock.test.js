@@ -478,7 +478,7 @@ describe('mock tests', function () {
       collection.insertOne({test:967, delete: true}, function (err, result) {
         if(err) return done(err);
         (!!result.ops).should.be.true;
-        collection.find({delete: true}).count(function (err, n) {
+        collection.find({ delete: true }).count(function (err, n) {
           if (err) return done(err);
           n.should.equal(2);
 
@@ -487,6 +487,28 @@ describe('mock tests', function () {
             result.result.n.should.equal(2);
 
             collection.find({delete: true}).count(function (err, n) {
+              if (err) return done(err);
+              n.should.equal(0);
+              done();
+            });
+          });
+        });
+      });
+    });
+    it('should delete many using the $in symbol', function (done) {
+      //query, data, options, callback
+      collection.insertMany([{ test: 967, delete: true }, { test: 418, delete: true }], function (err, result) {
+        if (err) return done(err);
+        (!!result.ops).should.be.true;
+        collection.find({ test: { $in: [418, 967] } }).count(function (err, n) {
+          if (err) return done(err);
+          n.should.equal(2);
+
+          collection.deleteMany({ test: { $in: [418, 967] } }, function (err, result) {
+            if (err) return done(err);
+            result.result.n.should.equal(2);
+
+            collection.find({ delete: true }).count(function (err, n) {
               if (err) return done(err);
               n.should.equal(0);
               done();
