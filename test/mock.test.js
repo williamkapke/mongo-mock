@@ -286,7 +286,7 @@ describe('mock tests', function () {
         if (err) return done(err);
         opResult.should.have.properties("ok", "lastErrorObject", "value");
         opResult.lastErrorObject.should.have.property("upserted");
-        opResult.lastErrorObject.should.have.property("updateExisting", false);
+        opResult.lastErrorObject.should.have.property("updatedExisting", false);
         opResult.lastErrorObject.should.have.property("n", 1);
 
         opResult.value.should.have.property("foo", "john");
@@ -307,7 +307,7 @@ describe('mock tests', function () {
     collection.findOneAndUpdate({ test: 1689 }, { $set: { foo: "john" }, $setOnInsert: { bar: "dang" } }, { upsert: true }, function (err, opResult) {
       if (err) return done(err);
       opResult.should.have.properties("ok", "lastErrorObject", "value");
-      opResult.lastErrorObject.should.have.property("updateExisting", true);
+      opResult.lastErrorObject.should.have.property("updatedExisting", true);
       opResult.lastErrorObject.should.have.property("n", 1);
 
       opResult.value.should.have.property("foo", "john");
