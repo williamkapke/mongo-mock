@@ -628,35 +628,119 @@ describe('mock tests', function () {
       });
     });
 
-    it('should bulk update', function(done) {
+    it('should have bulk operations', function(done) {
       collection.should.have.property('initializeOrderedBulkOp');
-      var bulk = collection.initializeOrderedBulkOp();
-      // bulk.insert({
-      //   test: 4321,
-      //   name: 'Cool dude',
-      // });
-      // bulk.find({test: {$exists: false}}).update({
-      //   $set: {
-      //     name: 'Test',
-      //   }
-      // }).update({
-      //   $set: {
-      //     num: 2,
-      //   }
-      // });
-      //
-      // bulk.insert([{
-      //   test: 53553,
-      //   coolpercent: 100,
-      // }]);
+      collection.should.have.property('initializeUnorderedBulkOp');
 
-      bulk.find({test: {$exists: true}}).remove();
-      // bulk.find({test: {$exists: true}}).removeOne();
+      done();
+    });
+
+    it('should have bulk find', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.should.have.property('find');
+      done();
+    });
+
+    it('should have bulk upsert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      var findOps = bulk.find({});
+
+      findOps.should.have.property('upsert');
+      done();
+    });
+
+    it('should bulk updateOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.find({test: {$exists: true}}).updateOne({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
       bulk.execute().then(() => {
-        collection.find({}).toArray()
-          .then((data) => {
-            console.log(data);
-            done();
+        collection.findOne({bulkUpdate: true})
+          .then((doc) => {
+            if (doc && doc.bulkUpdate) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not updateOne'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk update', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({test: {$exists: true}}).update({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.find({bulkUpdate: true}).toArray()
+          .then((docs) => {
+            if (docs.every((val) => val.bulkUpdate)) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not update'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk insert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.insert([{
+        test: 5353,
+        bulkTest: true,
+      }, {
+        test: 5454,
+        bulkTest: true,
+      }]);
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc.bulkTest) {
+              done();
+            } else {
+              done(new Error('Doc didn\'t get inserted'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk removeOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).removeOne();
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc) {
+              done(new Error('Doc didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk remove', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).remove();
+
+      bulk.execute().then(() => {
+        collection.find({bulkTest: true}).toArray()
+          .then((docs) => {
+            if (docs.length > 0) {
+              done(new Error('Docs didn\'t get removed'));
+            } else {
+              done();
+            }
           });
       });
     }).timeout(0);
