@@ -627,6 +627,39 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should bulk update', function(done) {
+      collection.should.have.property('initializeOrderedBulkOp');
+      var bulk = collection.initializeOrderedBulkOp();
+      // bulk.insert({
+      //   test: 4321,
+      //   name: 'Cool dude',
+      // });
+      // bulk.find({test: {$exists: false}}).update({
+      //   $set: {
+      //     name: 'Test',
+      //   }
+      // }).update({
+      //   $set: {
+      //     num: 2,
+      //   }
+      // });
+      //
+      // bulk.insert([{
+      //   test: 53553,
+      //   coolpercent: 100,
+      // }]);
+
+      bulk.find({test: {$exists: true}}).remove();
+      // bulk.find({test: {$exists: true}}).removeOne();
+      bulk.execute().then(() => {
+        collection.find({}).toArray()
+          .then((data) => {
+            console.log(data);
+            done();
+          });
+      });
+    }).timeout(0);
   });
 
   describe('cursors', function() {
@@ -775,5 +808,6 @@ describe('mock tests', function () {
         done();
       });
     });
+
   });
 });
