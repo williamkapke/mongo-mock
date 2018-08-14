@@ -38,6 +38,25 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should list collections names', function(done) {
+      var collectionName1 = "test_databases_collectionNames_collection_1";
+      var collectionName2 = "test_databases_collectionNames_collection_2";
+      var collectionName3 = "test_databases_collectionNames_collection_3";
+      connected_db.createCollection(collectionName1, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.createCollection(collectionName3, function(err, listCollection) {
+          if(err) return done(err);
+          connected_db.createCollection(collectionName2, function(err, listCollection) {
+            if(err) return done(err);
+            var items = connected_db.collectionNames();
+            items.should.containEql(collectionName1);
+            items.should.containEql(collectionName2);
+            items.should.containEql(collectionName3);
+            done();
+          });
+        });
+      });
+    });
     it('should drop collection', function (done) {
       var dropCollectionName = "test_databases_dropCollection_collection";
       connected_db.createCollection(dropCollectionName, function (err, dropCollection){
