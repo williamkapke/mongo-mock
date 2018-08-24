@@ -5,3 +5,4 @@ mongo.js
 node_modules
 yarn.lock
 .vscode
+.npmrc
