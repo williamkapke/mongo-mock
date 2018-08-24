@@ -269,14 +269,29 @@ describe('mock tests', function () {
 
     it('should update one (updateOne)', function (done) {
       //query, data, options, callback
-      collection.updateOne({test:123}, {$set:{foo:"buzz"}}, function (err, opResult) {
+      collection.updateOne({test:123}, { $set: { foo: { bar: "buzz", fang: "dang" } } }, function (err, opResult) {
         if(err) return done(err);
         opResult.result.n.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
           (!!doc).should.be.true;
-          doc.should.have.property("foo", "buzz");
+          doc.should.have.property("foo", { bar: "buzz", fang: "dang" });
+          done();
+        });
+      });
+    });
+
+    it('should update one (updateOne) with shallow overwrite', function (done) {
+      //query, data, options, callback
+      collection.updateOne({ test: 123 }, { $set: { foo: { newValue: "bar" } } }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.result.n.should.equal(1);
+
+        collection.findOne({ test: 123 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", { newValue: "bar" });
           done();
         });
       });
