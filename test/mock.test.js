@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 12;
+var EXPECTED_TOTAL_TEST_DOCS = 13;
 
 describe('mock tests', function () {
   var connected_db;
@@ -314,6 +314,47 @@ describe('mock tests', function () {
       });
     });
 
+    it('should create one (findOneAndUpdate) with upsert and no document found', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ test: 1689 }, { $set: { foo: "john" }, $setOnInsert: { bar: "dang" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("upserted");
+        opResult.lastErrorObject.should.have.property("updatedExisting", false);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("foo", "john");
+        opResult.value.should.have.property("bar", "dang");
+
+        collection.findOne({ test: 1689 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "john");
+          doc.should.have.property("bar", "dang");
+          done();
+        });
+      });
+    });
+
+  it('should update one (findOneAndUpdate) with upsert and matching document found', function (done) {
+    //query, data, options, callback
+    collection.findOneAndUpdate({ test: 1689 }, { $set: { foo: "john" }, $setOnInsert: { bar: "dang" } }, { upsert: true }, function (err, opResult) {
+      if (err) return done(err);
+      opResult.should.have.properties("ok", "lastErrorObject", "value");
+      opResult.lastErrorObject.should.have.property("updatedExisting", true);
+      opResult.lastErrorObject.should.have.property("n", 1);
+
+      opResult.value.should.have.property("foo", "john");
+
+      collection.findOne({ test: 1689 }, function (err, doc) {
+        if (err) return done(err);
+        (!!doc).should.be.true;
+        doc.should.have.property("foo", "john");
+        done();
+      });
+    });
+});
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
@@ -331,11 +372,11 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(8);
+        result.n.should.equal(9);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(8);
+          n.should.equal(9);
           done();
         });
       });
@@ -343,14 +384,14 @@ describe('mock tests', function () {
     it('should updateMany', function (done) {
       collection.updateMany({}, {$set:{updateMany:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        opResult.result.n.should.equal(8);
-        opResult.result.nModified.should.equal(8);
-        opResult.matchedCount.should.equal(8);
-        opResult.modifiedCount.should.equal(8);
+        opResult.result.n.should.equal(9);
+        opResult.result.nModified.should.equal(9);
+        opResult.matchedCount.should.equal(9);
+        opResult.modifiedCount.should.equal(9);
 
         collection.find({updateMany:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(8);
+          n.should.equal(9);
           done();
         });
       });
