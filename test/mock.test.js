@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 12;
+var EXPECTED_TOTAL_TEST_DOCS = 13;
 
 describe('mock tests', function () {
   var connected_db;
@@ -35,6 +35,25 @@ describe('mock tests', function () {
           var instance = _.find(items, {name:listCollectionName} );
           instance.should.not.be.undefined;
           done();
+        });
+      });
+    });
+    it('should list collections names', function(done) {
+      var collectionName1 = "test_databases_collectionNames_collection_1";
+      var collectionName2 = "test_databases_collectionNames_collection_2";
+      var collectionName3 = "test_databases_collectionNames_collection_3";
+      connected_db.createCollection(collectionName1, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.createCollection(collectionName3, function(err, listCollection) {
+          if(err) return done(err);
+          connected_db.createCollection(collectionName2, function(err, listCollection) {
+            if(err) return done(err);
+            var items = connected_db.collectionNames();
+            items.should.containEql(collectionName1);
+            items.should.containEql(collectionName2);
+            items.should.containEql(collectionName3);
+            done();
+          });
         });
       });
     });
@@ -250,14 +269,29 @@ describe('mock tests', function () {
 
     it('should update one (updateOne)', function (done) {
       //query, data, options, callback
-      collection.updateOne({test:123}, {$set:{foo:"buzz"}}, function (err, opResult) {
+      collection.updateOne({test:123}, { $set: { foo: { bar: "buzz", fang: "dang" } } }, function (err, opResult) {
         if(err) return done(err);
         opResult.result.n.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
           (!!doc).should.be.true;
-          doc.should.have.property("foo", "buzz");
+          doc.should.have.property("foo", { bar: "buzz", fang: "dang" });
+          done();
+        });
+      });
+    });
+
+    it('should update one (updateOne) with shallow overwrite', function (done) {
+      //query, data, options, callback
+      collection.updateOne({ test: 123 }, { $set: { foo: { newValue: "bar" } } }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.result.n.should.equal(1);
+
+        collection.findOne({ test: 123 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", { newValue: "bar" });
           done();
         });
       });
@@ -280,6 +314,47 @@ describe('mock tests', function () {
       });
     });
 
+    it('should create one (findOneAndUpdate) with upsert and no document found', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ test: 1689 }, { $set: { foo: "john" }, $setOnInsert: { bar: "dang" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("upserted");
+        opResult.lastErrorObject.should.have.property("updatedExisting", false);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("foo", "john");
+        opResult.value.should.have.property("bar", "dang");
+
+        collection.findOne({ test: 1689 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "john");
+          doc.should.have.property("bar", "dang");
+          done();
+        });
+      });
+    });
+
+  it('should update one (findOneAndUpdate) with upsert and matching document found', function (done) {
+    //query, data, options, callback
+    collection.findOneAndUpdate({ test: 1689 }, { $set: { foo: "john" }, $setOnInsert: { bar: "dang" } }, { upsert: true }, function (err, opResult) {
+      if (err) return done(err);
+      opResult.should.have.properties("ok", "lastErrorObject", "value");
+      opResult.lastErrorObject.should.have.property("updatedExisting", true);
+      opResult.lastErrorObject.should.have.property("n", 1);
+
+      opResult.value.should.have.property("foo", "john");
+
+      collection.findOne({ test: 1689 }, function (err, doc) {
+        if (err) return done(err);
+        (!!doc).should.be.true;
+        doc.should.have.property("foo", "john");
+        done();
+      });
+    });
+});
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
@@ -297,11 +372,11 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(8);
+        result.n.should.equal(9);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(8);
+          n.should.equal(9);
           done();
         });
       });
@@ -309,14 +384,14 @@ describe('mock tests', function () {
     it('should updateMany', function (done) {
       collection.updateMany({}, {$set:{updateMany:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        opResult.result.n.should.equal(8);
-        opResult.result.nModified.should.equal(8);
-        opResult.matchedCount.should.equal(8);
-        opResult.modifiedCount.should.equal(8);
+        opResult.result.n.should.equal(9);
+        opResult.result.nModified.should.equal(9);
+        opResult.matchedCount.should.equal(9);
+        opResult.modifiedCount.should.equal(9);
 
         collection.find({updateMany:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(8);
+          n.should.equal(9);
           done();
         });
       });
@@ -627,6 +702,123 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should have bulk operations', function(done) {
+      collection.should.have.property('initializeOrderedBulkOp');
+      collection.should.have.property('initializeUnorderedBulkOp');
+
+      done();
+    });
+
+    it('should have bulk find', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.should.have.property('find');
+      done();
+    });
+
+    it('should have bulk upsert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      var findOps = bulk.find({});
+
+      findOps.should.have.property('upsert');
+      done();
+    });
+
+    it('should bulk updateOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.find({test: {$exists: true}}).updateOne({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.findOne({bulkUpdate: true})
+          .then((doc) => {
+            if (doc && doc.bulkUpdate) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not updateOne'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk update', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({test: {$exists: true}}).update({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.find({bulkUpdate: true}).toArray()
+          .then((docs) => {
+            if (docs.every((val) => val.bulkUpdate)) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not update'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk insert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.insert([{
+        test: 5353,
+        bulkTest: true,
+      }, {
+        test: 5454,
+        bulkTest: true,
+      }]);
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc.bulkTest) {
+              done();
+            } else {
+              done(new Error('Doc didn\'t get inserted'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk removeOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).removeOne();
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc) {
+              done(new Error('Doc didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk remove', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).remove();
+
+      bulk.execute().then(() => {
+        collection.find({bulkTest: true}).toArray()
+          .then((docs) => {
+            if (docs.length > 0) {
+              done(new Error('Docs didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
   });
 
   describe('cursors', function() {
@@ -775,7 +967,6 @@ describe('mock tests', function () {
         done();
       });
     });
-
     it('should return stream of documents', function (done) {
       var results = [];
       var crsr = collection.find({});
