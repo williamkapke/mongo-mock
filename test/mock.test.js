@@ -38,6 +38,25 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should list collections names', function(done) {
+      var collectionName1 = "test_databases_collectionNames_collection_1";
+      var collectionName2 = "test_databases_collectionNames_collection_2";
+      var collectionName3 = "test_databases_collectionNames_collection_3";
+      connected_db.createCollection(collectionName1, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.createCollection(collectionName3, function(err, listCollection) {
+          if(err) return done(err);
+          connected_db.createCollection(collectionName2, function(err, listCollection) {
+            if(err) return done(err);
+            var items = connected_db.collectionNames();
+            items.should.containEql(collectionName1);
+            items.should.containEql(collectionName2);
+            items.should.containEql(collectionName3);
+            done();
+          });
+        });
+      });
+    });
     it('should drop collection', function (done) {
       var dropCollectionName = "test_databases_dropCollection_collection";
       connected_db.createCollection(dropCollectionName, function (err, dropCollection){
@@ -705,6 +724,123 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should have bulk operations', function(done) {
+      collection.should.have.property('initializeOrderedBulkOp');
+      collection.should.have.property('initializeUnorderedBulkOp');
+
+      done();
+    });
+
+    it('should have bulk find', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.should.have.property('find');
+      done();
+    });
+
+    it('should have bulk upsert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      var findOps = bulk.find({});
+
+      findOps.should.have.property('upsert');
+      done();
+    });
+
+    it('should bulk updateOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.find({test: {$exists: true}}).updateOne({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.findOne({bulkUpdate: true})
+          .then((doc) => {
+            if (doc && doc.bulkUpdate) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not updateOne'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk update', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({test: {$exists: true}}).update({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.find({bulkUpdate: true}).toArray()
+          .then((docs) => {
+            if (docs.every((val) => val.bulkUpdate)) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not update'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk insert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.insert([{
+        test: 5353,
+        bulkTest: true,
+      }, {
+        test: 5454,
+        bulkTest: true,
+      }]);
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc.bulkTest) {
+              done();
+            } else {
+              done(new Error('Doc didn\'t get inserted'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk removeOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).removeOne();
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc) {
+              done(new Error('Doc didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk remove', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).remove();
+
+      bulk.execute().then(() => {
+        collection.find({bulkTest: true}).toArray()
+          .then((docs) => {
+            if (docs.length > 0) {
+              done(new Error('Docs didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
   });
 
   describe('cursors', function() {
@@ -853,5 +989,6 @@ describe('mock tests', function () {
         done();
       });
     });
+
   });
 });
