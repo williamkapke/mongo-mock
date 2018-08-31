@@ -967,6 +967,17 @@ describe('mock tests', function () {
         done();
       });
     });
-
+    it('should return stream of documents', function (done) {
+      var results = [];
+      var crsr = collection.find({});
+      crsr.should.have.property('on');
+      crsr.on('data', function (data) {
+        results.push(data);
+      })
+      .on('end', function () {
+        results.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+        return done();
+      });
+    });
   });
 });
