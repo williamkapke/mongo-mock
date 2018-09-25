@@ -147,7 +147,7 @@ describe('mock tests', function () {
     it('should allow update with same non-unique index property', function (done) {
       collection.update({test:4444}, {$set:{test_nonunique:3333}}, function (err, result) {
         (!!err).should.be.false;
-        result.n.should.eql(1);
+        result.result.n.should.eql(1);
         done();
       });
     });
@@ -338,9 +338,9 @@ describe('mock tests', function () {
 
     it('should update one (default)', function (done) {
       //query, data, options, callback
-      collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
+      collection.update({test:123}, {$set:{foo:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        result.result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
@@ -351,9 +351,9 @@ describe('mock tests', function () {
       });
     });
     it('should update multi', function (done) {
-      collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
+      collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, opResult) {
         if(err) return done(err);
-        result.result.n.should.equal(9);
+        opResult.result.n.should.equal(9);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
@@ -378,9 +378,9 @@ describe('mock tests', function () {
       });
     });
     it('should update subdocs in dot notation', function (done) {
-      collection.update({}, {$set:{"update.subdocument":true}}, function (err, result) {
+      collection.update({}, {$set:{"update.subdocument":true}}, function (err, opResult) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
 
         collection.find({"update.subdocument":true}).count(function (err, n) {
           if(err) return done(err);
@@ -390,9 +390,9 @@ describe('mock tests', function () {
       });
     });
     it('should update subdoc arrays in dot notation', function (done) {
-      collection.update({}, {$set:{"update.arr.0": true}}, function (err, result) {
+      collection.update({}, {$set:{"update.arr.0": true}}, function (err, opResult) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
 
         collection.find({"update.arr.0": true}).count(function (err, n) {
           if(err) return done(err);
@@ -426,9 +426,9 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!!doc).should.be.false;
 
-        collection.update({test:1}, {test:1,bar:"none"}, {upsert:true}, function (err, result) {
+        collection.update({test:1}, {test:1,bar:"none"}, {upsert:true}, function (err, opResult) {
           if(err) return done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
 
           collection.find({test:1}).count(function (err, n) {
             if(err) return done(err);
@@ -462,9 +462,9 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!!doc).should.be.false;
 
-        collection.save({test:2,bar:"none"}, function (err, result) {
+        collection.save({test:2,bar:"none"}, function (err, opResult) {
           if(err) return done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
 
           collection.find({test:2}).count(function (err, n) {
             if(err) return done(err);
@@ -480,9 +480,9 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!doc).should.be.false;
 
-        collection.save({_id: doc._id,test:3,bar:"none"}, function (err, result) {
+        collection.save({_id: doc._id,test:3,bar:"none"}, function (err, opResult) {
           if(err) return done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
 
           collection.find({test:3}).count(function (err, n) {
             if(err) return done(err);
@@ -552,9 +552,9 @@ describe('mock tests', function () {
       });
     });
     it('should add to set (default)', function (done) {
-      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, result) {
+      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
           doc.should.have.property("boo", ["bar"]);
@@ -563,9 +563,9 @@ describe('mock tests', function () {
       });
     });
     it('should add to set', function (done) {
-      collection.update({test:123}, {$addToSet:{ boo:"foo"}}, function (err, result) {
+      collection.update({test:123}, {$addToSet:{ boo:"foo"}}, function (err, opResult) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
           doc.should.have.property("boo", ["bar", "foo"]);
@@ -574,9 +574,9 @@ describe('mock tests', function () {
       });
     });
     it('should not add to set already existing item', function (done) {
-      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, result) {
+      collection.update({test:123}, {$addToSet:{ boo:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
           doc.should.have.property("boo", ["bar", "foo"]);
@@ -588,9 +588,9 @@ describe('mock tests', function () {
       // add some fields to increment
       collection.update({test:333}, {$set: {incTest: 1, multiIncTest: { foo: 1 }}}, function (err, result) {
         if (err) done(err);
-        collection.update({test:333}, { $inc: { incTest: 1, 'multiIncTest.foo': 2}}, function (err, result) {
+        collection.update({test:333}, { $inc: { incTest: 1, 'multiIncTest.foo': 2}}, function (err, opResult) {
           if (err) done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
           collection.findOne({test:333}, function (err, doc) {
             if (err) done(err);
             doc.incTest.should.equal(2);
@@ -601,9 +601,9 @@ describe('mock tests', function () {
       });
     });
     it('should decrement a number', function(done) {
-      collection.update({test:333}, { $inc: { incTest: -1, 'multiIncTest.foo': -2, 'some.new.key': 42}}, function (err, result) {
+      collection.update({test:333}, { $inc: { incTest: -1, 'multiIncTest.foo': -2, 'some.new.key': 42}}, function (err, opResult) {
         if (err) done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
         collection.findOne({test:333}, function (err, doc) {
           if (err) done(err);
           doc.incTest.should.equal(1);
@@ -616,9 +616,9 @@ describe('mock tests', function () {
     it('should push item into array', function (done) {
       collection.update({test:333}, { $set: {pushTest: []}}, function (err, result) {
         if (err) done(err);
-        collection.update({test:333}, { $push:{ pushTest: {$each: [ 2 ]} }} ,function (err, result) {
+        collection.update({test:333}, { $push:{ pushTest: {$each: [ 2 ]} }} ,function (err, opResult) {
           if (err) done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
           collection.findOne({test:333}, function (err, doc) {
             if (err) done(err);
             doc.pushTest.should.have.length(1);
@@ -629,9 +629,9 @@ describe('mock tests', function () {
       });
     });
     it('should push item into array that does not yet exist on the doc', function (done) {
-      collection.update({test:333}, { $push:{ newPushTest: {$each: [ 2 ]} }} ,function (err, result) {
+      collection.update({test:333}, { $push:{ newPushTest: {$each: [ 2 ]} }} ,function (err, opResult) {
         if (err) done(err);
-        result.n.should.equal(1);
+        opResult.result.n.should.equal(1);
         collection.findOne({test: 333}, function (err, doc) {
           if (err) done(err);
           doc.newPushTest.should.have.length(1);
@@ -643,9 +643,9 @@ describe('mock tests', function () {
     it('should push item into array + $slice', function (done) {
       collection.update({test:333}, { $set: {pushTest: []}}, function (err, result) {
         if (err) done(err);
-        collection.update({test:333}, { $push:{ pushTest: {$each: [ 1, 2, 3, 4 ], $slice: -2 } }} ,function (err, result) {
+        collection.update({test:333}, { $push:{ pushTest: {$each: [ 1, 2, 3, 4 ], $slice: -2 } }} ,function (err, opResult) {
           if (err) done(err);
-          result.n.should.equal(1);
+          opResult.result.n.should.equal(1);
           collection.findOne({test:333}, function (err, doc) {
             if (err) done(err);
             doc.pushTest.should.have.length(2);
