@@ -340,7 +340,7 @@ describe('mock tests', function () {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(1);
+        result.result.n.should.equal(1);
 
         collection.findOne({test:123}, function (err, doc) {
           if(err) return done(err);
@@ -353,7 +353,7 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(9);
+        result.result.n.should.equal(9);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
