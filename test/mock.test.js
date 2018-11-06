@@ -7,7 +7,7 @@ var id = ObjectID();
 MongoClient.persist = "mongo.js";
 
 // this number is used in all the query/find tests, so it's easier to add more docs
-var EXPECTED_TOTAL_TEST_DOCS = 13;
+var EXPECTED_TOTAL_TEST_DOCS = 16;
 
 describe('mock tests', function () {
   var connected_db;
@@ -185,6 +185,40 @@ describe('mock tests', function () {
         done();
       });
     });
+    it('should allow _id to be a primitive', function (done) {
+      collection.insert({_id:15, test:457, foo:true}, function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+        (!!result.ops[0]).should.be.true;
+        result.ops[0]._id.should.equal(15);
+        result.ops[0]._id.should.not.equal("15");
+        result.ops[0].should.have.property('test', 457);
+        done();
+      });
+    });
+
+    it('should allow _id to be 0', function (done) {
+      collection.insert({_id:0, test:458, foo:true}, function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+        (!!result.ops[0]).should.be.true;
+        result.ops[0]._id.should.equal(0);
+        result.ops[0]._id.should.not.equal("0");
+        result.ops[0].should.have.property('test', 458);
+        done();
+      });
+    });
+
+    it('should allow _id to be ""', function (done) {
+      collection.insert({_id:"", test:459, foo:true}, function (err, result) {
+        if(err) return done(err);
+        (!!result.ops).should.be.true;
+        (!!result.ops[0]).should.be.true;
+        result.ops[0]._id.should.equal("");
+        result.ops[0].should.have.property('test', 459);
+        done();
+      });
+    });
 
     it('should findOne by a property', function (done) {
       collection.findOne({test:123}, function (err, doc) {
@@ -353,11 +387,11 @@ describe('mock tests', function () {
     it('should update multi', function (done) {
       collection.update({}, {$set:{foo:"bar"}}, {multi:true}, function (err, result) {
         if(err) return done(err);
-        result.n.should.equal(9);
+        result.n.should.equal(12);
 
         collection.find({foo:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(9);
+          n.should.equal(12);
           done();
         });
       });
@@ -365,14 +399,14 @@ describe('mock tests', function () {
     it('should updateMany', function (done) {
       collection.updateMany({}, {$set:{updateMany:"bar"}}, function (err, opResult) {
         if(err) return done(err);
-        opResult.result.n.should.equal(9);
-        opResult.result.nModified.should.equal(9);
-        opResult.matchedCount.should.equal(9);
-        opResult.modifiedCount.should.equal(9);
+        opResult.result.n.should.equal(12);
+        opResult.result.nModified.should.equal(12);
+        opResult.matchedCount.should.equal(12);
+        opResult.modifiedCount.should.equal(12);
 
         collection.find({updateMany:"bar"}).count(function (err, n) {
           if(err) return done(err);
-          n.should.equal(9);
+          n.should.equal(12);
           done();
         });
       });
