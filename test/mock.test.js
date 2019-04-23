@@ -71,6 +71,16 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should drop collection by promise', async function () {
+      var dropCollectionName = "test_databases_dropCollection_collection_promise";
+      let collection = await connected_db.createCollection(dropCollectionName);
+      let result = await connected_db.dropCollection(dropCollectionName);
+      let items = await connected_db.listCollections().toArray();
+      var instance = _.find(items, {name:dropCollectionName} );
+      (instance === undefined).should.be.true;
+    });
+
     it('should load another db', function (done) {
       var otherCollectionName = 'someOtherCollection';
       var otherDb = connected_db.db('some_other_mock_database');
@@ -723,6 +733,15 @@ describe('mock tests', function () {
           });
         });
       });
+    });
+    it('should drop themselves by promise',async function() {
+      var dropCollectionName = "test_collections_drop_collection_promise";
+      let dropCollection = await connected_db.createCollection(dropCollectionName);
+      await dropCollection.drop();
+      let items = await connected_db.listCollections().toArray();
+      var instance = _.find(items, {name:dropCollectionName} );
+      (instance === undefined).should.be.true;
+      
     });
 
     it('should have bulk operations', function(done) {
