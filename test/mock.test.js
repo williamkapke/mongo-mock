@@ -72,13 +72,18 @@ describe('mock tests', function () {
       });
     });
 
-    it('should drop collection by promise', async function () {
+    it('should drop collection by promise', function (done) {
       var dropCollectionName = "test_databases_dropCollection_collection_promise";
-      let collection = await connected_db.createCollection(dropCollectionName);
-      let result = await connected_db.dropCollection(dropCollectionName);
-      let items = await connected_db.listCollections().toArray();
-      var instance = _.find(items, {name:dropCollectionName} );
-      (instance === undefined).should.be.true;
+      connected_db.createCollection(dropCollectionName)
+      .then( collection => {
+        return  connected_db.dropCollection(dropCollectionName);
+      }).then( result => {
+        return connected_db.listCollections().toArray();
+      }).then( items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
+      })
     });
 
     it('should load another db', function (done) {
@@ -734,14 +739,18 @@ describe('mock tests', function () {
         });
       });
     });
-    it('should drop themselves by promise',async function() {
+    it('should drop themselves by promise', function(done) {
       var dropCollectionName = "test_collections_drop_collection_promise";
-      let dropCollection = await connected_db.createCollection(dropCollectionName);
-      await dropCollection.drop();
-      let items = await connected_db.listCollections().toArray();
-      var instance = _.find(items, {name:dropCollectionName} );
-      (instance === undefined).should.be.true;
-      
+      connected_db.createCollection(dropCollectionName)
+      .then(dropCollection => {
+        return dropCollection.drop();
+      }).then(() => {
+        return connected_db.listCollections().toArray();
+      }).then(items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
+      });
     });
 
     it('should have bulk operations', function(done) {
