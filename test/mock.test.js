@@ -71,6 +71,21 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should drop collection by promise', function (done) {
+      var dropCollectionName = "test_databases_dropCollection_collection_promise";
+      connected_db.createCollection(dropCollectionName)
+      .then( collection => {
+        return  connected_db.dropCollection(dropCollectionName);
+      }).then( result => {
+        return connected_db.listCollections().toArray();
+      }).then( items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
+      })
+    });
+
     it('should load another db', function (done) {
       var otherCollectionName = 'someOtherCollection';
       var otherDb = connected_db.db('some_other_mock_database');
@@ -722,6 +737,19 @@ describe('mock tests', function () {
             done();
           });
         });
+      });
+    });
+    it('should drop themselves by promise', function(done) {
+      var dropCollectionName = "test_collections_drop_collection_promise";
+      connected_db.createCollection(dropCollectionName)
+      .then(dropCollection => {
+        return dropCollection.drop();
+      }).then(() => {
+        return connected_db.listCollections().toArray();
+      }).then(items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
       });
     });
 
