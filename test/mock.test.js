@@ -38,6 +38,25 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should list collections names', function(done) {
+      var collectionName1 = "test_databases_collectionNames_collection_1";
+      var collectionName2 = "test_databases_collectionNames_collection_2";
+      var collectionName3 = "test_databases_collectionNames_collection_3";
+      connected_db.createCollection(collectionName1, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.createCollection(collectionName3, function(err, listCollection) {
+          if(err) return done(err);
+          connected_db.createCollection(collectionName2, function(err, listCollection) {
+            if(err) return done(err);
+            var items = connected_db.collectionNames();
+            items.should.containEql(collectionName1);
+            items.should.containEql(collectionName2);
+            items.should.containEql(collectionName3);
+            done();
+          });
+        });
+      });
+    });
     it('should drop collection', function (done) {
       var dropCollectionName = "test_databases_dropCollection_collection";
       connected_db.createCollection(dropCollectionName, function (err, dropCollection){
@@ -52,6 +71,21 @@ describe('mock tests', function () {
         });
       });
     });
+
+    it('should drop collection by promise', function (done) {
+      var dropCollectionName = "test_databases_dropCollection_collection_promise";
+      connected_db.createCollection(dropCollectionName)
+      .then( collection => {
+        return  connected_db.dropCollection(dropCollectionName);
+      }).then( result => {
+        return connected_db.listCollections().toArray();
+      }).then( items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
+      })
+    });
+
     it('should load another db', function (done) {
       var otherCollectionName = 'someOtherCollection';
       var otherDb = connected_db.db('some_other_mock_database');
@@ -534,7 +568,7 @@ describe('mock tests', function () {
       collection.insertOne({test:967, delete: true}, function (err, result) {
         if(err) return done(err);
         (!!result.ops).should.be.true;
-        collection.find({delete: true}).count(function (err, n) {
+        collection.find({ delete: true }).count(function (err, n) {
           if (err) return done(err);
           n.should.equal(2);
 
@@ -543,6 +577,28 @@ describe('mock tests', function () {
             result.result.n.should.equal(2);
 
             collection.find({delete: true}).count(function (err, n) {
+              if (err) return done(err);
+              n.should.equal(0);
+              done();
+            });
+          });
+        });
+      });
+    });
+    it('should delete many using the $in symbol', function (done) {
+      //query, data, options, callback
+      collection.insertMany([{ test: 967, delete: true }, { test: 418, delete: true }], function (err, result) {
+        if (err) return done(err);
+        (!!result.ops).should.be.true;
+        collection.find({ test: { $in: [418, 967] } }).count(function (err, n) {
+          if (err) return done(err);
+          n.should.equal(2);
+
+          collection.deleteMany({ test: { $in: [418, 967] } }, function (err, result) {
+            if (err) return done(err);
+            result.result.n.should.equal(2);
+
+            collection.find({ delete: true }).count(function (err, n) {
               if (err) return done(err);
               n.should.equal(0);
               done();
@@ -683,6 +739,136 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should drop themselves by promise', function(done) {
+      var dropCollectionName = "test_collections_drop_collection_promise";
+      connected_db.createCollection(dropCollectionName)
+      .then(dropCollection => {
+        return dropCollection.drop();
+      }).then(() => {
+        return connected_db.listCollections().toArray();
+      }).then(items => {
+        var instance = _.find(items, {name:dropCollectionName} );
+        (instance === undefined).should.be.true;
+        done();
+      });
+    });
+
+    it('should have bulk operations', function(done) {
+      collection.should.have.property('initializeOrderedBulkOp');
+      collection.should.have.property('initializeUnorderedBulkOp');
+
+      done();
+    });
+
+    it('should have bulk find', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.should.have.property('find');
+      done();
+    });
+
+    it('should have bulk upsert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      var findOps = bulk.find({});
+
+      findOps.should.have.property('upsert');
+      done();
+    });
+
+    it('should bulk updateOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+      bulk.find({test: {$exists: true}}).updateOne({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.findOne({bulkUpdate: true})
+          .then((doc) => {
+            if (doc && doc.bulkUpdate) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not updateOne'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk update', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({test: {$exists: true}}).update({
+        $set: {
+          bulkUpdate: true,
+        }
+      });
+      bulk.execute().then(() => {
+        collection.find({bulkUpdate: true}).toArray()
+          .then((docs) => {
+            if (docs.every((val) => val.bulkUpdate)) {
+              done();
+            } else {
+              done(new Error('Bulk operation did not update'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk insert', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.insert([{
+        test: 5353,
+        bulkTest: true,
+      }, {
+        test: 5454,
+        bulkTest: true,
+      }]);
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc.bulkTest) {
+              done();
+            } else {
+              done(new Error('Doc didn\'t get inserted'));
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk removeOne', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).removeOne();
+
+      bulk.execute().then(() => {
+        collection.findOne({test: 5353})
+          .then((doc) => {
+            if (doc) {
+              done(new Error('Doc didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
+
+    it('should bulk remove', function(done) {
+      var bulk = collection.initializeOrderedBulkOp();
+
+      bulk.find({bulkTest: true}).remove();
+
+      bulk.execute().then(() => {
+        collection.find({bulkTest: true}).toArray()
+          .then((docs) => {
+            if (docs.length > 0) {
+              done(new Error('Docs didn\'t get removed'));
+            } else {
+              done();
+            }
+          });
+      });
+    }).timeout(0);
   });
 
   describe('cursors', function() {
@@ -789,35 +975,97 @@ describe('mock tests', function () {
       });
     });
 
-    it('should sort results by `test` ascending', function (done) {
-      var crsr = collection.find({});
-      crsr.should.have.property('sort');
-      crsr.sort({test: 1}).toArray(function(err, res) {
-        if (err) done(err);
+    describe('sort', function() {
+      var sort_db;
+      var sort_collection;
+      var date = new Date();
+      var docs = [
+        { sortField: null, otherField: 6}, // null
+        { sortField: [ 1 ], otherField: 4}, // array
+        { sortField: 42, otherField: 1}, // number
+        { sortField: true, otherField: 5}, // boolean
+        { sortField: 'foo', otherField: 2}, // string
+        { sortField: /foo/, otherField: 7}, // regex
+        { sortField: { foo: 'bar' }, otherField: 8}, // object
+        { sortField: date, otherField: 3} // date
+      ];
 
-        var sorted = res.sort(function(a,b) {
-          a = typeof a.test === 'undefined' ? null : a.test;
-          b = typeof b.test === 'undefined' ? null : b.test;
-          return a - b;
+      function stripIds(result) {
+        return result.map(function(x) { delete x._id; return x; });
+      }
+
+      before(function (done) {
+        MongoClient.connect("mongodb://somesortserver/sort_mock_database", function(err, db) {
+          sort_db = db;
+          sort_collection = connected_db.collection("sorting");
+          sort_collection.insertMany(docs).then(function() { done() });
         });
-        res.should.eql(sorted);
-        done();
       });
-    });
+      after(function(done) {
+        sort_db.close().then(done).catch(done)
+      });
 
-    it('should sort results by `test` descending', function (done) {
-      var crsr = collection.find({});
-      crsr.should.have.property('sort');
-      crsr.sort({test: -1}).toArray(function(err, res) {
-        if (err) done(err);
+      it('should sort results by type order', function (done) {
+        var sortedDocs = [
+          { sortField: null, otherField: 6}, // null
+          { sortField: 42, otherField: 1}, // number
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: date, otherField: 3}, // date
+          { sortField: /foo/, otherField: 7} // regex
+        ]
 
-        var sorted = res.sort(function(a,b) {
-          a = typeof a.test === 'undefined' ? null : a.test;
-          b = typeof b.test === 'undefined' ? null : b.test;
-          return b - a;
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({sortField: 1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
         });
-        res.should.eql(sorted);
-        done();
+      });
+
+      it('should sort results by type order (reversed)', function (done) {
+        var sortedDocs = [
+          { sortField: /foo/, otherField: 7}, // regex
+          { sortField: date, otherField: 3}, // date
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: 42, otherField: 1}, // number
+          { sortField: null, otherField: 6}, // null
+        ]
+
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({sortField: -1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
+        });
+      });
+
+      it('should sort results by value', function (done) {
+        var sortedDocs = [
+          { sortField: 42, otherField: 1}, // number
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: date, otherField: 3}, // date
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: null, otherField: 6}, // null
+          { sortField: /foo/, otherField: 7}, // regex
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+        ]
+
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({otherField: 1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
+        });
       });
     });
 
@@ -829,6 +1077,18 @@ describe('mock tests', function () {
         var sampleTest = 333;
         res.should.containEql(sampleTest);
         done();
+      });
+    });
+    it('should return stream of documents', function (done) {
+      var results = [];
+      var crsr = collection.find({});
+      crsr.should.have.property('on');
+      crsr.on('data', function (data) {
+        results.push(data);
+      })
+      .on('end', function () {
+        results.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+        return done();
       });
     });
   });
