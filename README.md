@@ -21,7 +21,8 @@ MongoClient.persist="mongo.js";//persist the data to disk
 // Connection URL
 var url = 'mongodb://localhost:27017/myproject';
 // Use connect method to connect to the Server
-MongoClient.connect(url, {}, function(err, db) {
+MongoClient.connect(url, {}, function(err, client) {
+  var db = client.db();
   // Get the documents collection
   var collection = db.collection('documents');
   // Insert some documents
