@@ -255,6 +255,19 @@ describe('mock tests', function () {
         done();
       });
     });
+    it('should find by an ObjectID', function (done) {
+      collection.find({_id:ObjectID(id.toHexString())}).toArray(function (err, results) {
+        if(err) return done(err);
+        (!!results).should.be.true;
+        results.should.have.length(1);
+        var doc = results[0];
+        doc.should.have.property('_id');
+        id.toHexString().should.eql(doc._id.toHexString());
+        doc.should.have.property('test', 456);
+        doc.should.have.property('foo', true);
+        done();
+      });
+    });
     it('should findOne by an ObjectID', function (done) {
       collection.findOne({_id:id}, function (err, doc) {
         if(err) return done(err);
