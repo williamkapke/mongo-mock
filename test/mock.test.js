@@ -711,7 +711,7 @@ describe('mock tests', function () {
         });
       });
     });
-    it('should count the number of items in the collection', function(done) {
+    it('should count the number of items in the collection - count method', function(done) {
       collection.should.have.property('count');
       collection.count({}, function(err, cnt) {
         if (err) done(err);
@@ -722,6 +722,27 @@ describe('mock tests', function () {
           singleCnt.should.equal(1);
           done();
         });
+      });
+    });
+    it('should count the number of items in the collection - countDocuments method', function(done) {
+      collection.should.have.property('countDocuments');
+      collection.countDocuments({}, function(err, cnt) {
+        if (err) done(err);
+        cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+
+        collection.countDocuments({ test:333 }, function(err, singleCnt) {
+          if (err) done(err);
+          singleCnt.should.equal(1);
+          done();
+        });
+      });
+    });
+    it('should count the number of items in the collection - estimatedDocumentCount method', function(done) {
+      collection.should.have.property('estimatedDocumentCount');
+      collection.estimatedDocumentCount({}, function(err, cnt) {
+        if (err) done(err);
+        cnt.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+        done();
       });
     });
     it('should drop themselves', function(done) {
