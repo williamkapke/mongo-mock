@@ -975,35 +975,97 @@ describe('mock tests', function () {
       });
     });
 
-    it('should sort results by `test` ascending', function (done) {
-      var crsr = collection.find({});
-      crsr.should.have.property('sort');
-      crsr.sort({test: 1}).toArray(function(err, res) {
-        if (err) done(err);
+    describe('sort', function() {
+      var sort_db;
+      var sort_collection;
+      var date = new Date();
+      var docs = [
+        { sortField: null, otherField: 6}, // null
+        { sortField: [ 1 ], otherField: 4}, // array
+        { sortField: 42, otherField: 1}, // number
+        { sortField: true, otherField: 5}, // boolean
+        { sortField: 'foo', otherField: 2}, // string
+        { sortField: /foo/, otherField: 7}, // regex
+        { sortField: { foo: 'bar' }, otherField: 8}, // object
+        { sortField: date, otherField: 3} // date
+      ];
 
-        var sorted = res.sort(function(a,b) {
-          a = typeof a.test === 'undefined' ? null : a.test;
-          b = typeof b.test === 'undefined' ? null : b.test;
-          return a - b;
+      function stripIds(result) {
+        return result.map(function(x) { delete x._id; return x; });
+      }
+
+      before(function (done) {
+        MongoClient.connect("mongodb://somesortserver/sort_mock_database", function(err, db) {
+          sort_db = db;
+          sort_collection = connected_db.collection("sorting");
+          sort_collection.insertMany(docs).then(function() { done() });
         });
-        res.should.eql(sorted);
-        done();
       });
-    });
+      after(function(done) {
+        sort_db.close().then(done).catch(done)
+      });
 
-    it('should sort results by `test` descending', function (done) {
-      var crsr = collection.find({});
-      crsr.should.have.property('sort');
-      crsr.sort({test: -1}).toArray(function(err, res) {
-        if (err) done(err);
+      it('should sort results by type order', function (done) {
+        var sortedDocs = [
+          { sortField: null, otherField: 6}, // null
+          { sortField: 42, otherField: 1}, // number
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: date, otherField: 3}, // date
+          { sortField: /foo/, otherField: 7} // regex
+        ]
 
-        var sorted = res.sort(function(a,b) {
-          a = typeof a.test === 'undefined' ? null : a.test;
-          b = typeof b.test === 'undefined' ? null : b.test;
-          return b - a;
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({sortField: 1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
         });
-        res.should.eql(sorted);
-        done();
+      });
+
+      it('should sort results by type order (reversed)', function (done) {
+        var sortedDocs = [
+          { sortField: /foo/, otherField: 7}, // regex
+          { sortField: date, otherField: 3}, // date
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: 42, otherField: 1}, // number
+          { sortField: null, otherField: 6}, // null
+        ]
+
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({sortField: -1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
+        });
+      });
+
+      it('should sort results by value', function (done) {
+        var sortedDocs = [
+          { sortField: 42, otherField: 1}, // number
+          { sortField: 'foo', otherField: 2}, // string
+          { sortField: date, otherField: 3}, // date
+          { sortField: [ 1 ], otherField: 4}, // array
+          { sortField: true, otherField: 5}, // boolean
+          { sortField: null, otherField: 6}, // null
+          { sortField: /foo/, otherField: 7}, // regex
+          { sortField: { foo: 'bar' }, otherField: 8}, // object
+        ]
+
+        var crsr = sort_collection.find({});
+        crsr.should.have.property('sort');
+        crsr.sort({otherField: 1}).toArray(function(err, sortRes) {
+          if(err) done(err);
+          stripIds(sortRes).should.eql(sortedDocs);
+          done();
+        });
       });
     });
 
