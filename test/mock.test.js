@@ -598,6 +598,11 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should return a promise for deleteMany', function (done) {
+      const prom = collection.deleteMany({ shouldNeverMatchAnythingImportant: true});
+      prom.should.be.instanceOf(Promise);
+      done();
+    });
     it('should delete many using the $in symbol', function (done) {
       //query, data, options, callback
       collection.insertMany([{ test: 967, delete: true }, { test: 418, delete: true }], function (err, result) {
