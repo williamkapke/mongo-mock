@@ -503,6 +503,19 @@ describe('mock tests', function () {
       });
     });
 
+    it('should create one (findOneAndUpdate) with upsert and no document found, using correct _id', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ _id: 123 }, { timestamp: 1 }] }, { $set: { foo: "alice" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.value.should.have.property("_id", 123);
+        opResult.value.should.have.property("foo", "alice");
+
+        collection.remove({ _id: 123 }, function () {
+          done();
+        });
+      });
+    });
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, opResult) {
