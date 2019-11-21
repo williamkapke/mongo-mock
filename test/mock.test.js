@@ -1130,5 +1130,26 @@ describe('mock tests', function () {
         return done();
       });
     });
+
+    it('should compute total with forEach', function (done) {
+      collection.insertMany([
+        { testForEach: 1111111, value: 1 },
+        { testForEach: 1111111, value: 2 },
+        { testForEach: 1111111, value: 3 },
+        { testForEach: 1111111, value: 4 }
+      ], function (err) {
+        if (err) done(err);
+        var crsr = collection.find({ testForEach: 1111111 });
+        crsr.should.have.property('forEach');
+
+        var total = 0;
+        crsr.forEach(function (doc) {
+          total += doc.value;
+        }, function() {
+          total.should.equal(10);
+          done();
+        });
+      });
+    });
   });
 });
