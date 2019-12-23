@@ -1014,6 +1014,46 @@ describe('mock tests', function () {
       });
     });
 
+    describe('each', function() {
+      var each_db;
+      var each_collection;
+      var docs = [
+          { a: 1 },
+          { b: 2 }
+      ];
+
+      function stripIds(result) {
+        return result.map(function(x) { delete x._id; return x; });
+      }
+
+      before(function (done) {
+        MongoClient.connect("mongodb://somesortserver/sort_mock_database", function(err, db) {
+          each_db = db;
+          each_collection = connected_db.collection("eaching");
+          each_collection.insertMany(docs).then(function() { done() });
+        });
+      });
+      after(function(done) {
+        each_db.close().then(done).catch(done)
+      });
+
+      it('should manipulate with each and return modified array', function (done) {
+        var crsr = each_collection.find({});
+        crsr.should.have.property('each');
+        crsr.each(function(item) {
+          item._test = true;
+        }).toArray(function(err, res) {
+          if (err) done(err);
+
+          stripIds(res);
+          res.should.containEql({ a: 1,  _test: true });
+          res.should.containEql({ b: 2,  _test: true });
+          res.should.not.containEql({ c: 3,  _test: true });
+          done();
+        });
+      });
+    });
+
     describe('sort', function() {
       var sort_db;
       var sort_collection;
