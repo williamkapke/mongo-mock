@@ -383,6 +383,139 @@ describe('mock tests', function () {
     });
 });
 
+    it('should create one (findOneAndUpdate) with upsert and no document found, complex filter', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ test: 1690 }, { another_test: 1691 }] }, { $set: { foo: "alice" }, $setOnInsert: { bar: "bob" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("upserted");
+        opResult.lastErrorObject.should.have.property("updatedExisting", false);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("foo", "alice");
+        opResult.value.should.have.property("bar", "bob");
+
+        collection.findOne({ test: 1690, another_test: 1691 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "alice");
+          doc.should.have.property("bar", "bob");
+          done();
+        });
+      });
+    });
+
+    it('should update one (findOneAndUpdate) with upsert and matching document found, complex filter', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ test: 1690 }, { another_test: 1691 }] }, { $set: { foo: "alice2" }, $setOnInsert: { bar: "bob2" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("updatedExisting", true);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("foo", "alice2");
+        opResult.value.should.have.property("bar", "bob"); // Update here, no insertion.
+
+        function cleanup(cb) {
+          collection.remove({ test: 1690, another_test: 1691 }, cb);
+        }
+
+        collection.findOne({ test: 1690, another_test: 1691 }, function (err, doc) {
+          if (err) {
+            return cleanup(function () {
+              done(err);
+            });
+          }
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "alice2");
+
+          cleanup(done);
+        });
+      });
+    });
+
+    it('should create one (findOneAndUpdate) with upsert and no document found, more complex filter', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ test: 1790 }, { timestamp: { $lt: 1 } }] }, { $set: { foo: "alice", timestamp: 1 }, $setOnInsert: { bar: "bob" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("upserted");
+        opResult.lastErrorObject.should.have.property("updatedExisting", false);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("test");
+        opResult.value.should.have.property("foo", "alice");
+        opResult.value.should.have.property("bar", "bob");
+
+        collection.findOne({ test: 1790 }, function (err, doc) {
+          if (err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "alice");
+          doc.should.have.property("bar", "bob");
+          doc.should.have.property("timestamp", 1);
+          done();
+        });
+      });
+    });
+
+    it('should not update one (findOneAndUpdate) with upsert and no matching document found, more complex filter', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ test: 1790 }, { timestamp: { $lt: 1 } }] }, { $set: { foo: "alice2", timestamp: 1 }, $setOnInsert: { bar: "bob2" } }, { upsert: true }, function (err, opResult) {
+        if (err) {
+          if (err.code !== 11000) {
+            return done(err);
+          }
+        }
+
+        done();
+      });
+    });
+
+    it('should update one (findOneAndUpdate) with upsert and document found, more complex filter', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ test: 1790 }, { timestamp: { $lt: 2 } }] }, { $set: { foo: "alice3", timestamp: 2 }, $setOnInsert: { bar: "bob3" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.should.have.properties("ok", "lastErrorObject", "value");
+        opResult.lastErrorObject.should.have.property("updatedExisting", true);
+        opResult.lastErrorObject.should.have.property("n", 1);
+
+        opResult.value.should.have.property("test");
+        opResult.value.should.have.property("foo", "alice3");
+        opResult.value.should.have.property("bar", "bob");
+
+        function cleanup(cb) {
+          collection.remove({ test: 1790 }, cb);
+        }
+
+        collection.findOne({ test: 1790 }, function (err, doc) {
+          if (err) {
+            return cleanup(function () {
+              done(err);
+            });
+          }
+          (!!doc).should.be.true;
+          doc.should.have.property("foo", "alice3");
+          doc.should.have.property("bar", "bob");
+          doc.should.have.property("timestamp", 2);
+          cleanup(done);
+        });
+      });
+    });
+
+    it('should create one (findOneAndUpdate) with upsert and no document found, using correct _id', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ _id: 123 }, { timestamp: 1 }] }, { $set: { foo: "alice" } }, { upsert: true }, function (err, opResult) {
+        if (err) return done(err);
+        opResult.value.should.have.property("_id", 123);
+        opResult.value.should.have.property("foo", "alice");
+
+        collection.remove({ _id: 123 }, function () {
+          done();
+        });
+      });
+    });
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, opResult) {
