@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-  - "6.14.4"
-  - "8.11.4"
-  - "10.15.3"
-  - "12.2.0"
+  - "lts/boron"
+  - "lts/carbon"
+  - "lts/dubnium"
+  - "lts/erbium"
+  - "lts/*"
