@@ -516,6 +516,17 @@ describe('mock tests', function () {
       });
     });
 
+    it('should update nothing (findOneAndUpdate) without upsert and no document found', function (done) {
+      //query, data, options, callback
+      collection.findOneAndUpdate({ $and: [{ _id: 123 }, { timestamp: 1 }] }, { $set: { foo: "alice" } }, { upsert: false }, function (err, opResult) {
+        if (err) return done(err);
+        if (opResult.value !== null) {
+          throw new Error('opResult.value should be null.');
+        }
+        done();
+      });
+    });
+
     it('should update one (default)', function (done) {
       //query, data, options, callback
       collection.update({test:123}, {$set:{foo:"bar"}}, function (err, opResult) {
