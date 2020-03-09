@@ -12,4 +12,10 @@ function time(id) {
   return id.getTimestamp().getTime()
 }
 
+sift.use({
+  $exists: function (existFlag, propertyValue) {
+    return existFlag ? propertyValue !== undefined : propertyValue === undefined;
+  }
+});
+
 module.exports = sift;

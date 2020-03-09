@@ -295,6 +295,53 @@ describe('mock tests', function () {
       });
     })
 
+    it('should find document where nulled property exists', function (done) {
+      collection.insert({_id: 'g5f6h2df6g46j', a: true, b: null}, function (errInsert, resultInsert) {
+        if(errInsert) return done(errInsert);
+        (!!resultInsert.ops).should.be.true;
+        collection.find({b:{$exists: true}}).toArray(function (errFind, resultFind) {
+          if (errFind) return done(errFind);
+          collection.remove({_id: 'g5f6h2df6g46j'}, function (errRemove) {
+            if (errRemove) return done(errRemove);
+            resultFind.length.should.equal(1);
+            resultFind[0].should.have.property("b", null);
+            done();
+          });
+        });
+      });
+    })
+
+    it('should not find document where property does not exists', function (done) {
+      collection.insert({_id: 'weg8h7rt6h5weg69', a: 37}, function (errInsert, resultInsert) {
+        if(errInsert) return done(errInsert);
+        (!!resultInsert.ops).should.be.true;
+        collection.find({_id: 'weg8h7rt6h5weg69', b:{$exists: false}}).toArray(function (errFind, resultFind) {
+          if (errFind) return done(errFind);
+          collection.remove({_id: 'weg8h7rt6h5weg69'}, function (errRemove) {
+            if (errRemove) return done(errRemove);
+            resultFind.length.should.equal(1);
+            resultFind[0].should.have.property("a", 37);
+            done();
+          });
+        });
+      });
+    })
+
+    it('should find document with nulled property and exists false', function (done) {
+      collection.insert({_id: 'iuk51hf34', a: true, b: null}, function (errInsert, resultInsert) {
+        if(errInsert) return done(errInsert);
+        (!!resultInsert.ops).should.be.true;
+        collection.find({_id: 'iuk51hf34', b:{$exists: false}}).toArray(function (errFind, resultFind) {
+          if (errFind) return done(errFind);
+          collection.remove({_id: 'iuk51hf34'}, function (errRemove) {
+            if (errRemove) return done(errRemove);
+            resultFind.length.should.equal(0);
+            done();
+          });
+        });
+      });
+    })
+
     it('should update one (updateOne)', function (done) {
       //query, data, options, callback
       collection.updateOne({test:123}, { $set: { foo: { bar: "buzz", fang: "dang" } } }, function (err, opResult) {
