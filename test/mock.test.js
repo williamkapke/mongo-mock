@@ -520,9 +520,7 @@ describe('mock tests', function () {
       //query, data, options, callback
       collection.findOneAndUpdate({ $and: [{ _id: 123 }, { timestamp: 1 }] }, { $set: { foo: "alice" } }, { upsert: false }, function (err, opResult) {
         if (err) return done(err);
-        if (opResult.value !== null) {
-          throw new Error('opResult.value should be null.');
-        }
+        opResult.should.have.property("value", null);
         done();
       });
     });
