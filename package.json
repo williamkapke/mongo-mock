@@ -26,7 +26,7 @@
     "lodash": "^4.17.13",
     "modifyjs": "^0.3.1",
     "object-assign-deep": "^0.4.0",
-    "sift": "^3.1.1"
+    "sift": "^11.1.8"
   },
   "devDependencies": {
     "mocha": "^5",
