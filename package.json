@@ -21,11 +21,11 @@
   },
   "homepage": "https://github.com/williamkapke/mongo-mock",
   "dependencies": {
+    "assign-deep": "^1.0.1",
     "bson-objectid": "^1.2.5",
     "debug": "^2.6.9",
     "lodash": "^4.17.13",
     "modifyjs": "^0.3.1",
-    "object-assign-deep": "^0.4.0",
     "sift": "^11.1.8"
   },
   "devDependencies": {
