@@ -41,6 +41,10 @@ describe('options tests', function () {
     var options = find_options({_id:"ABC123"}, undefined, cb);
     options.should.eql({ callback:cb, fields:undefined, limit:0, query:{_id:"ABC123"}, skip:0 });
   });
+  it('should accept signature: "selector, undefined"', function(){
+    var options = find_options({_id:"ABC123"}, undefined);
+    options.should.eql({ callback: undefined, fields:undefined, limit:0, query:{_id:"ABC123"}, skip:0 });
+  });
   it('should accept signature: "selector, options"', function(){
     var options = find_options({_id:"ABC123"}, {fields:{_id:-1}, skip:100});
     options.should.eql({ callback:undefined, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
@@ -48,6 +52,14 @@ describe('options tests', function () {
   it('should accept signature: "selector, options"', function(){
     var options = find_options({_id:"ABC123"}, {projection:{_id:-1}, skip:100});
     options.should.eql({ callback:undefined, fields:{_id:-1}, limit:0, query:{_id:"ABC123"}, skip:100 });
+  });
+  it('should accept limit:1, fields:undefined as options: "selector, options"', function(){
+    var options = find_options({_id:"ABC123"}, {limit:1, fields:undefined});
+    options.should.eql({ callback:undefined, fields:{}, limit:1, query:{_id:"ABC123"}, skip:0 });
+  });
+  it('should accept limit:1, fields:{...} as options: "selector, options"', function(){
+    var options = find_options({_id:"ABC123"}, {limit:1, fields:{"a":1}});
+    options.should.eql({ callback:undefined, fields:{"a":1}, limit:1, query:{_id:"ABC123"}, skip:0 });
   });
   it('should accept signature: "selector, options, callback"', function(){
     var options = find_options({_id:"ABC123"}, {fields:{_id:-1}, skip:100}, cb);
