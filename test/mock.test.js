@@ -24,7 +24,6 @@ describe('mock tests', function () {
     connected_db.close().then(done).catch(done)
   });
 
-
   describe('databases', function() {
     it('should list collections', function(done) {
       var listCollectionName = "test_databases_listCollections_collection";
@@ -1379,6 +1378,35 @@ describe('mock tests', function () {
           done();
         });
       });
+    });
+  });
+
+  describe('entire module', function () {
+    before(function (done) {
+      collection.insertOne({
+        items: [
+          {
+            description: 'a description'
+          }
+        ]
+      }, done);
+    });
+
+    after(function (done) {
+      collection.remove({}, done);
+    });
+
+    it('should not throw uncatchable errors', function (done) {
+      // this call should make ModifyJs throw an error
+      collection.findOneAndUpdate(
+        { 'items.description': 'a description' },
+        { $set: { 'items.$.description': 'a new description' } },
+        function (err) {
+          if (!err) return done(new Error('Expected to catch an error'));
+          err.message.should.equal('The positional operator did not find the match needed from the query');
+          done();
+        }
+      );
     });
   });
 });
