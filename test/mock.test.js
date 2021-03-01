@@ -1,3 +1,4 @@
+var assert = require('assert');
 var should = require('should');
 var _ = require('lodash');
 var mongo = require('../');
@@ -185,7 +186,7 @@ describe('mock tests', function () {
         done();
       });
     });
-});
+  });
 
   describe('collections', function () {
     'drop,insert,findOne,findOneAndUpdate,update,updateOne,updateMany,remove,deleteOne,deleteMany,save'.split(',').forEach(function(key) {
@@ -273,7 +274,7 @@ describe('mock tests', function () {
         if(err) return done(err);
         (!!doc).should.be.true;
         doc.should.have.property('_id');
-        id.str.should.eql(doc._id.str);
+        id.toHexString().should.eql(doc._id.toHexString());
         doc.should.have.property('test', 456);
         done();
       });
@@ -1379,6 +1380,48 @@ describe('mock tests', function () {
           done();
         });
       });
+    });
+  });
+
+  it('should handle issue #144', () => {
+    var productStateCollection = connected_db.collection('ProductState');
+    var productCollection = connected_db.collection('Product');
+
+    var product, state;
+
+    return productCollection.insert({
+      name: 'Test'
+    }).then((result) => {
+      product = result.ops[0];
+
+      assert.ok(product._id);
+      assert.ok(product._id.toHexString());
+      assert.strictEqual(product.name, 'Test');
+
+      return productStateCollection.insert({
+        price: 4900
+      });
+    }).then((result) => {
+      state = result.ops[0];
+
+      assert.ok(state._id);
+      assert.ok(state._id.toHexString());
+      assert.strictEqual(state.price, 4900);
+
+      return productCollection.findOneAndUpdate(
+        { _id: product._id },
+        { $set: { currentState: state } },
+        { returnOriginal: false }
+      );
+    }).then((result) => {
+      product = result.value;
+
+      assert.ok(product._id);
+      assert.ok(product._id.toHexString());
+      assert.strictEqual(product.name, 'Test');
+      assert.ok(product.currentState._id);
+      assert.ok(product.currentState._id.toHexString());
+      assert.strictEqual(product.currentState.price, 4900);
     });
   });
 });
