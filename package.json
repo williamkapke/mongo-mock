@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/williamkapke/mongo-mock",
   "dependencies": {
-    "bson-objectid": "^1.2.5",
+    "bson-objectid": "^2.0.1",
     "debug": "^2.6.9",
     "lodash": "^4.17.13",
     "modifyjs": "^0.3.1",
