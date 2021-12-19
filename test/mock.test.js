@@ -1098,6 +1098,56 @@ describe('mock tests', function () {
           });
       });
     }).timeout(0);
+
+    it('should bulk write', function(done) {
+      const setup = Promise.all([
+        collection.insertOne({ test: 1989, delete: true, many: false }),
+        collection.insertOne({ test: 1989, delete: true, many: true }),
+        collection.insertOne({ test: 1989, delete: true, many: true }),
+        collection.insertOne({ test: 1989, update: true, many: false }),
+        collection.insertOne({ test: 1989, update: true, many: true }),
+        collection.insertOne({ test: 1989, update: true, many: true })
+      ])
+
+      setup
+        .then(() => {
+          return collection.bulkWrite([
+            {
+              insertOne: {
+                document: { test: 1989, inserted: true }
+              }
+            },
+            { updateOne: {
+              filter: { test: 1989, update: true, many: false },
+              update: {
+                $set: { foo: 'bar' }
+              }
+            } },
+            { updateMany: {
+              filter: { test: 1989, update: true, many: true },
+              update: {
+                $set: { baz: 'bing' }
+              }
+            } },
+            { deleteOne: {
+              filter: { test: 1989, delete: true, many: false }
+            } },
+            { deleteMany: {
+              filter: { test: 1989, delete: true, many: true }
+            } },
+          ]).then(results => {
+            results.result.n.should.equal(7)
+            
+            // Clean up, and assert that there are 4 records left
+            return collection.deleteMany({test: 1989})
+              .then(results => {
+                results.result.n.should.equal(4)
+                done()
+              })
+          })
+        })
+        .catch(err => done(err))
+    }).timeout(0);
   });
 
   describe('cursors', function() {
