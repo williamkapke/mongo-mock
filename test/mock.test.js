@@ -343,6 +343,99 @@ describe('mock tests', function () {
       });
     })
 
+    it('should NOT replace one (replaceOne) with no document found', function (done) {
+      //query, data, options, callback
+      collection.replaceOne({ test: 1456 }, { test: 1456, b: false, alsoDeep: { deepC: 'C' } }, function (err, opResult) {
+        if(err) return done(err);
+        opResult.result.n.should.equal(0);
+
+        collection.findOne({ test:1456 }, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.false;
+          done();
+        });
+      });
+    });
+
+    it('should replace one (replaceOne) with matching document found', function (done) {
+      //query, data, options, callback
+      collection.insertOne({ test: 1457, a: true, deep: { bar: "buzz", fang: "dang" } }, function (insertErr, insertResult) {
+        if(insertErr) return done(insertErr);
+        insertResult.result.n.should.equal(1);
+
+        collection.replaceOne({ test: 1457 }, { test: 1457, b: false, alsoDeep: { deepC: 'C' } }, function (err, opResult) {
+          if(err) return done(err);
+          opResult.result.n.should.equal(1);
+
+          collection.findOne({ test: 1457 }, function (err, doc) {
+            if(err) return done(err);
+            (!!doc).should.be.true;
+            doc.should.not.have.property('a');
+            doc.should.not.have.property('deep');
+            doc.should.have.property('b', false);
+            doc.should.have.property('alsoDeep');
+            doc.alsoDeep.should.have.property('deepC', 'C');
+
+            collection.remove({ test: 1457 }, function (errRemove) {
+              if (errRemove) return done(errRemove);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should replace one (replaceOne) with upsert and matching document found', function (done) {
+      //query, data, options, callback
+      collection.insertOne({ test:1458, a: true, deep: { bar: "buzz", fang: "dang" } }, function (insertErr, insertResult) {
+        if(insertErr) return done(insertErr);
+        insertResult.result.n.should.equal(1);
+
+        collection.replaceOne({ test: 1458 }, { test: 1458, b: false, alsoDeep: { deepC: 'C' } }, { upsert: true }, function (err, opResult) {
+          if(err) return done(err);
+          opResult.result.n.should.equal(1);
+
+          collection.findOne({ test: 1458 }, function (err, doc) {
+            if(err) return done(err);
+            (!!doc).should.be.true;
+            doc.should.not.have.property('a');
+            doc.should.not.have.property('deep');
+            doc.should.have.property('b', false);
+            doc.should.have.property('alsoDeep');
+            doc.alsoDeep.should.have.property('deepC', 'C');
+
+            collection.remove({ test: 1458 }, function (errRemove) {
+              if (errRemove) return done(errRemove);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should replace one (replaceOne) with upsert and no document found', function (done) {
+      //query, data, options, callback
+      collection.replaceOne({ test: 1459 }, { test: 1459, b: false, alsoDeep: { deepC: 'C' } }, { upsert: true }, function (err, opResult) {
+        if(err) return done(err);
+        opResult.result.n.should.equal(1);
+
+        collection.findOne({ test:1459 }, function (err, doc) {
+          if(err) return done(err);
+          (!!doc).should.be.true;
+          doc.should.not.have.property('a');
+          doc.should.not.have.property('deep');
+          doc.should.have.property('b', false);
+          doc.should.have.property('alsoDeep');
+          doc.alsoDeep.should.have.property('deepC', 'C');
+
+          collection.remove({ test: 1459 }, function (errRemove) {
+            if (errRemove) return done(errRemove);
+            done();
+          });
+        });
+      });
+    });
+
     it('should update one (updateOne)', function (done) {
       //query, data, options, callback
       collection.updateOne({test:123}, { $set: { foo: { bar: "buzz", fang: "dang" } } }, function (err, opResult) {
