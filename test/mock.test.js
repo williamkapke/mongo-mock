@@ -1411,6 +1411,16 @@ describe('mock tests', function () {
       });
     });
 
+    it('should be async iterable', async function () {
+      var results = [];
+      var crsr = collection.find({});
+      crsr.should.have.property('on');
+      for await (const data of crsr) {
+        results.push(data)
+      }
+      results.length.should.equal(EXPECTED_TOTAL_TEST_DOCS);
+    });
+
     it('should compute total with forEach', function (done) {
       collection.insertMany([
         { testForEach: 1111111, value: 1 },
