@@ -58,6 +58,33 @@ describe('mock tests', function () {
         });
       });
     });
+    it('should list collections', function(done) {
+      var collectionName1 = "test_databases_collectionNames_collection_1";
+      var collectionName2 = "test_databases_collectionNames_collection_2";
+      var collectionName3 = "test_databases_collectionNames_collection_3";
+      connected_db.createCollection(collectionName1, function(err, listCollection) {
+        if(err) return done(err);
+        connected_db.createCollection(collectionName3, function(err, listCollection) {
+          if(err) return done(err);
+          connected_db.createCollection(collectionName2, function(err, listCollection) {
+            if(err) return done(err);
+            var collections = connected_db.collections();
+            var collectionNames = connected_db.collectionNames();
+            const names = collections.map(item => item.collectionName)
+            names.should.be.eql(collectionNames);
+            done();
+          });
+        });
+      });
+    });
+    it('should throw Not Implemented error', function(done) {
+      try{
+        connected_db.collections({});
+      }catch(e){
+        e.message.should.be.eql('Not Implemented. PR welcome!');
+        done();
+      }
+    });
     it('should drop collection', function (done) {
       var dropCollectionName = "test_databases_dropCollection_collection";
       connected_db.createCollection(dropCollectionName, function (err, dropCollection){
