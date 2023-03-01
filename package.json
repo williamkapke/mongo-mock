@@ -29,7 +29,7 @@
     "sift": "^11.1.8"
   },
   "devDependencies": {
-    "mocha": "^5",
+    "mocha": "^10",
     "should": "^5"
   },
   "engines": {
